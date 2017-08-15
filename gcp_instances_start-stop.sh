@@ -15,11 +15,11 @@
 # %I     	hour (01..12)
 
 day_of_week = date -u +"%u" # get the day of the week (in UTC)
-day_hour = date -u +"H" # get the current hour (in UTC) 
+day_hour = date -u +"H" # get the current hour (in UTC)
 
-GCP_env_list = /home/fgalindo/GCP_envs.txt 
+gcloud compute instances list | awk '{print $1}' > gpc_instances_list.txt
+gcloud compute instances list | awk '{print $2}' > gp_instances_zone_list.txt
+gcloud compute instances list | awk '{print $NF}' > gp_instances_status.txt
 
-for i in $GCP_env_list ; 
-	do 
-		
-			
+
+#GCP_env_list = /home/fgalindo/GCP_envs.txt

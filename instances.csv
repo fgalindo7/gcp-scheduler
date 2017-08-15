@@ -1,0 +1,18 @@
+NAME                                                       ZONE            MACHINE_TYPE                PREEMPTIBLE  INTERNAL_IP  EXTERNAL_IP     STATUS
+vm-rchinta-centos73-test                                   europe-west3-b  n1-standard-4                            10.156.0.3   35.198.180.9    TERMINATED
+vm-spappala-ubuntu16-bigdata631-mysql56-mapr52-00075268    europe-west3-b  custom (8 vCPU, 20.00 GiB)               10.156.0.2   35.198.111.58   TERMINATED
+vm-gcp-scheduler                                           us-central1-f   n1-standard-1                            10.128.0.3   35.184.190.115  RUNNING
+vm-windowsserver2012-fabric-631                            us-central1-f   n1-standard-4                            10.128.0.2                   TERMINATED
+vm-aarnoult-wserver2016-tac-studio-611-mysql5719-00074686  europe-west1-d  custom (1 vCPU, 6.50 GiB)                10.132.0.3   35.195.198.200  RUNNING
+vm-rohitpatel-tac611-mysql-johnsonandjohnson-00079168-2    asia-east1-a    n1-standard-2                            10.140.0.4   35.194.209.183  RUNNING
+vm-zqin-test                                               asia-east1-a    n1-standard-1                            10.140.0.2                   TERMINATED
+vm-hschueler-southerncaliforniaedisoncompany-00077955-d    us-east1-c      n1-standard-4                            10.142.0.2                   TERMINATED
+corinne-00072249-coca                                      us-west1-b      n1-standard-4                            10.138.0.2                   TERMINATED
+vm-abanda-windowsserver2012-mysql57-oracle12c-studio-631   europe-west1-b  n1-standard-4                            10.132.0.7   35.195.147.95   RUNNING
+vm-mapr-sandbox-for-hadoop-521                             europe-west1-b  n1-standard-8                            10.132.0.6   35.195.177.177  RUNNING
+vm-wserver2016-jobserver611-svn517-mysql5719               europe-west1-b  custom (1 vCPU, 6.50 GiB)                10.132.0.2   35.195.65.231   RUNNING
+vm-zqin-rhel6-ldap-00075363                                asia-east1-c    n1-standard-2                            10.140.0.3   35.194.245.122  TERMINATED
+vm-ahsiao-centos73-cibuilder621-jenkins-maven35-00079092   us-west1-a      custom (2 vCPU, 8.00 GiB)                10.138.0.4   35.185.251.196  TERMINATED
+vm-ahsiao-jobserver631-tdbank-00077577                     us-west1-a      custom (1 vCPU, 3.00 GiB)                10.138.0.3   35.199.150.207  TERMINATED
+vm-rarcot-mnh-00078328                                     us-east4-a      n1-standard-1                            10.150.0.2                   TERMINATED
+vm-rohitpatel-tac611-mysql-johnsonandjohnson-00079168      us-east4-a      custom (2 vCPU, 8.75 GiB)                10.150.0.3   35.199.39.159   TERMINATED
