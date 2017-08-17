@@ -1,85 +1,285 @@
-#!/bin/sh
+#!/usr/bin/env python
 
-# script that starts stops machines depending on their schedule
-# Input: list of active environment names with their respective UTC schedule, e.g.:
-# vm-fgalindo-windowsserver-datafabric-631-00055555,start;stop;<active_days>
-
-# by default, the script pulls the current names of environments from GCP, depending on the time zone, it generates the start and the stop times (the active days are by default Monday through Friday)
-
-# date +"[option]"
-
-# [option]	result
-# %T     	time; same as %H:%M:%S
-# %u     	day of week (1..7); 1 is Monday
-# %H     	hour (00..23)
-# %I     	hour (01..12)
-
-# GCP Zones, Cities and UTC time zones
+# Copyright 2017 Talend Inc. All Rights Reserved.
 #
-# Zones												GCP City				Talend City			Operating Hours (UTC)
-# asia-east1-a								Taiwan					Beijing					2200-1000 UTC
-# asia-east1-c								Taiwan					Beijing					2200-1000 UTC
-# asia-east1-b								Taiwan					Beijing					2200-1000 UTC
-# asia-northeast1-c						Tokyo														2100-0900 UTC
-# asia-northeast1-a						Tokyo														2100-0900 UTC
-# asia-northeast1-b						Tokyo														2100-0900 UTC
-# asia-southeast1-b						Singapore				Bangalore				0030-1230 UTC
-# asia-southeast1-a						Singapore				Bangalore				0030-1230 UTC
-# australia-southeast1-a			Sydney													2000-0800 UTC
-# australia-southeast1-c			Sydney													2000-0800 UTC
-# australia-southeast1-b			Sydney													2000-0800 UTC
-# europe-west1-d							Belgium			 		Suresnes				0400-1600 UTC
-# europe-west1-c							Belgium				 	Suresnes				0400-1600 UTC
-# europe-west1-b							Belgium			 		Suresnes				0400-1600 UTC
-# europe-west2-c							London					London					0500-1700 UTC
-# europe-west2-a							London					London					0500-1700 UTC
-# europe-west2-b							London					London					0500-1700 UTC
-# europe-west3-b							Frankfurt				Bonn						0400-1600 UTC
-# europe-west3-c							Frankfurt				Bonn						0400-1600 UTC
-# europe-west3-a							Frankfurt				Bonn						0400-1600 UTC
-# us-central1-c								Iowa														1100-2300 UTC
-# us-central1-a								Iowa														1100-2300 UTC
-# us-central1-f								Iowa														1100-2300 UTC
-# us-central1-b								Iowa														1100-2300 UTC
-# us-east1-d									S.Carolina			Atlanta					1000-2200 UTC
-# us-east1-c									S.Carolina			Atlanta					1000-2200 UTC
-# us-east1-b									S.Carolina			Atlanta					1000-2200 UTC
-# us-east4-b									N.Virginia	 										1100-2300 UTC
-# us-east4-a									N.Virginia	 										1100-2300 UTC
-# us-east4-c									N.Virginia	 										1100-2300 UTC
-# us-west1-b									Oregon					Irvine					1300-0100 UTC
-# us-west1-a									Oregon					Irvine					1300-0100 UTC
-# us-west1-c									Oregon					Irvine					1300-0100 UTC
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
 
-# function to find current time and day of the week
-
-function currentTime () {
-  day_of_week = date -u +"%u" # get the day of the week (in UTC)
-  day_hour = date -u +"H" # get the current hour (in UTC)
-
-}
-
-
-# function to retrieve current instances and its state (started or stopped)
-function currentInstances() {
-  gcloud compute instances list | awk '{print $1, $2, $NF}' > gp_instances_list.txt
-
-  ## TODO
-  ## create list of instances that need to be started
-  ## creaate list of instances that need to be stopped
+"""
+Scheduler to be run hourly as a cronjob under /etc/crontab
+Starts stops machines depending on their schedule and zone
+List of active environment names with their respective UTC schedule, e.g.:
+vm-fgalindo-windowsserver-datafabric-631-00055555,start;stop;<active_days>
+For more information, see the README.md
+"""
 
 
-}
 
-# function to stop instances that need to be stopped
-function stopInstances() {
-  gcloud compute isntances start $stoppedInstances
-  gcloud compute instances stop $startedIsntances
-}
 
-# function to start instances that need to be started
-function startInstances() {
-  gcloud compute isntances start $stoppedInstances
-  gcloud compute instances stop $startedIsntances
+# by default, the script pulls the current names of environments from GCP,
+#depending on the time zone, it generates the start and the stop times (the active days are by default Monday through Friday)
+
+'''
+--------------------------------------------------------------------------------
+# GCP Zones Cities and UTC time zones
+--------------------------------------------------------------------------------
+#
+# Zones	                  GCP City		  Talend City   on (UTC)  off (UTC)
+--------------------------------------------------------------------------------
+asia-southeast1-b				  singapore		  bangalore			0030      1230
+asia-southeast1-a				  singapore		  bangalore		  0030      1230
+europe-west1-d				    belgium		 	  suresnes			0400      1600
+europe-west1-c				    belgium			  suresnes			0400      1600
+europe-west1-b				    belgium			  suresnes			0400      1600
+europe-west3-b				    frankfurt		  bonn				  0400      1600
+europe-west3-c				    frankfurt	    bonn				  0400      1600
+europe-west3-a				    frankfurt		  bonn				  0400      1600
+europe-west2-c				    london			  london				0500      1700
+europe-west2-a				    london			  london				0500      1700
+europe-west2-b				    london		    london				0500      1700
+us-east1-d					      s_carolina	   atlanta			1000      2200
+us-east1-c					      s_carolina	   atlanta			1000      2200
+us-east1-b		      		  s_carolina	   atlanta			1000      2200
+us-central1-c					    iowa								        1100      2300
+us-central1-a					    iowa								        1100      2300
+us-central1-f					    iowa								        1100      2300
+us-central1-b					    iowa								        1100      2300
+us-east4-b				        n_virginia	 						    1100      2300
+us-east4-a				        n_virginia	 						    1100      2300
+us-east4-c					      n_virginia	 						    1100      2300
+us-west1-b					      oregon			   irvine				1300      0100
+us-west1-a                oregon			   irvine				1300      0100
+us-west1-c                oregon			   irvine				1300      0100
+australia-southeast1-a		sydney							        2000      0800
+australia-southeast1-c		sydney			   		          2000      0800
+australia-southeast1-b		sydney	   							    2000      0800
+asia-northeast1-c			    tokyo				                2100      0900
+asia-northeast1-a				  tokyo					              2100      0900
+asia-northeast1-b				  tokyo								        2100      0900
+asia-east1-a              taiwan			  beijing       2200      1000
+asia-east1-c              taiwan			  beijing       2200      1000
+asia-east1-b              taiwan			  beijing       2200      1000
+--------------------------------------------------------------------------------
+'''
+
+## Global variables
+
+start_time=6
+stop_time=20
+
+weekends='off'
+weekdays='on'
+mon='on'
+tue='on'
+wed='on'
+thu='on'
+fri='on'
+
+
+# [START current_time]
+function current_time() {
+    # date +"[option]"
+
+    # [option]	result
+    # %T     time; same as %H:%M:%S
+    # %H     hour (00..23)
+    # %w     day of week (0..6); 0 is Sunday
+    # %u     day of week (1..7); 1 is Monday
+    current_utc_week_day_num = date -u +"%u"  # get the day of the week (in UTC) Monday is 1
+
+    case $current_utc_week_day_num in
+      1)
+        current_utc_week_day='mon'
+      ;;
+      2)
+        current_utc_week_day='tue'
+      ;;
+      3)
+        current_utc_week_day='wed'
+      ;;
+      4)
+        current_utc_week_day='thu'
+      ;;
+      5)
+        current_utc_week_day='fri'
+      ;;
+      6)
+        current_utc_week_day='sat'
+      ;;
+      7)
+        current_utc_week_day='sun'
+      ;;
+    esac
+
+    current_utc_hour = date -u +"%H"  # get the current hour (in UTC)
+} # [END current_time]
+
+
+
+# [START get_current_instances]
+function get_current_instances() {
+    # list of NAME ZONE STATUS without header sorted by zone
+    gcloud compute instances list | awk 'NR>1{print $1, $2, $NF}' | sort -t$' ' -k2 > gcp_instances_list.txt
+
+} # [END get_current_instances]
+
+# [START replace_zone_with_city]
+function replace_zone_with_city() {
+    if [ -a gcp_instances_list.txt ]
+        sed -i -e 's/asia-east1-a/taiwan/g' gcp_instances_list.txt
+        sed -i -e 's/asia-east1-c/taiwan/g' gcp_instances_list.txt
+        sed -i -e 's/asia-east1-b/taiwan/g' gcp_instances_list.txt
+        sed -i -e 's/asia-northeast1-c/tokyo/g' gcp_instances_list.txt
+        sed -i -e 's/asia-northeast1-a/tokyo/g' gcp_instances_list.txt
+        sed -i -e 's/asia-northeast1-b/tokyo/g' gcp_instances_list.txt
+        sed -i -e 's/asia-southeast1-b/singapore/g' gcp_instances_list.txt
+        sed -i -e 's/asia-southeast1-a/singapore/g' gcp_instances_list.txt
+        sed -i -e 's/australia-southeast1-a/sydney/g' gcp_instances_list.txt
+        sed -i -e 's/australia-southeast1-c/sydney/g' gcp_instances_list.txt
+        sed -i -e 's/australia-southeast1-b/sydney/g' gcp_instances_list.txt
+        sed -i -e 's/europe-west1-d/belgium/g' gcp_instances_list.txt
+        sed -i -e 's/europe-west1-c/belgium/g' gcp_instances_list.txt
+        sed -i -e 's/europe-west1-b/belgium/g' gcp_instances_list.txt
+        sed -i -e 's/europe-west2-c/london/g' gcp_instances_list.txt
+        sed -i -e 's/europe-west2-a/london/g' gcp_instances_list.txt
+        sed -i -e 's/europe-west2-b/london/g' gcp_instances_list.txt
+        sed -i -e 's/europe-west3-b/frankfurt/g' gcp_instances_list.txt
+        sed -i -e 's/europe-west3-c/frankfurt/g' gcp_instances_list.txt
+        sed -i -e 's/europe-west3-a/frankfurt/g' gcp_instances_list.txt
+        sed -i -e 's/us-central1-c/iowa/g' gcp_instances_list.txt
+        sed -i -e 's/us-central1-a/iowa/g' gcp_instances_list.txt
+        sed -i -e 's/us-central1-f/iowa/g' gcp_instances_list.txt
+        sed -i -e 's/us-central1-b/iowa/g' gcp_instances_list.txt
+        sed -i -e 's/us-east1-d/S.Carolina/g' gcp_instances_list.txt
+        sed -i -e 's/us-east1-c/S.Carolina/g' gcp_instances_list.txt
+        sed -i -e 's/us-east1-b/S.Carolina/g' gcp_instances_list.txt
+        sed -i -e 's/us-east4-b/N.Virginia/g' gcp_instances_list.txt
+        sed -i -e 's/us-east4-a/N.Virginia/g' gcp_instances_list.txt
+        sed -i -e 's/us-east4-c/N.Virginia/g' gcp_instances_list.txt
+        sed -i -e 's/us-west1-b/oregon/g' gcp_instances_list.txt
+        sed -i -e 's/us-west1-a/oregon/g' gcp_instances_list.txt
+        sed -i -e 's/us-west1-c/oregon/g' gcp_instances_list.txt
+      else
+        echo "gcp_instances_list.txt was not generated"
+        exit
+    fi
+}# [END replace_zone_with_city]
+
+
+# [START list_instances_by_zone]
+function list_instances_by_zone() {
+
+  while IFS=' ' read -r line || [[ -n "$line" ]]; do
+      # taiwan
+    if [[ `echo $line | awk '{print $2;}'` == "taiwan" ]] ; then
+      taiwan_instances+=(`echo $line | awk '{print $1}'`)
+      # tokyo
+    elif [[ `echo $line | awk '{print $2;}'` == "tokyo" ]]; then
+      tokyo_instances+=(`echo $line | awk '{print $1}'`)
+      # singapore
+    elif [[ `echo $line | awk '{print $2;}'` == "singapore" ]]; then
+      singapore_instances+=(`echo $line | awk '{print $1}'`)
+      # sydney
+    elif [[ `echo $line | awk '{print $2;}'` == "sydney" ]]; then
+      sydney_instances+=(`echo $line | awk '{print $1}'`)
+      # belgium
+    elif [[ `echo $line | awk '{print $2;}'` == "belgium" ]]; then
+      belgium_instances+=(`echo $line | awk '{print $1}'`)
+      # london
+    elif [[ `echo $line | awk '{print $2;}'` == "london" ]]; then
+      london_instances+=(`echo $line | awk '{print $1}'`)
+      # frankfurt
+    elif [[ `echo $line | awk '{print $2;}'` == "frankfurt" ]]; then
+      frankfurt_instances+=(`echo $line | awk '{print $1}'`)
+      # iowa
+    elif [[ `echo $line | awk '{print $2;}'` == "iowa" ]]; then
+      iowa_instances+=(`echo $line | awk '{print $1}'`)
+      # s_carolina
+    elif [[ `echo $line | awk '{print $2;}'` == "s_carolina" ]]; then
+      s_carolina_instances+=(`echo $line | awk '{print $1}'`)
+      #n_virginia
+    elif [[ `echo $line | awk '{print $2;}'` == "n_virginia" ]]; then
+      n_virgina_instances+=(`echo $line | awk '{print $1}'`)
+      # oregon
+    elif [[ `echo $line | awk '{print $2;}'` == "oregon" ]]; then
+      oregon_instances+=(`echo $line | awk '{print $1}'`)
+    fi;
+  done < "gcp_instances_list.txt"
+
+} # [END list_instances_by_zone]
+
+
+
+# [START stop_instances]
+function stop_instances() {
+  gcloud compute instances stop $1 --$zone
+} # [END stop_instances]
+
+
+
+# [START start_instances]
+function start_instances() {
+  gcloud compute instances start $1 --$zone
+} # [END start_instances]
+
+
+
+
+function  main() {
+
+  # make sure it's not a weekend before starting or stopping
+  if [ $current_utc_week_day != 'sat' ] && [ $current_utc_week_day != 's' ]
+    if [ $current_utc_week_day != 'sat' ] && [ $current_utc_week_day != 'sat' ]
+
+      case $current_utc_hour in
+        00 )
+          if [[ condition ]]; then
+            #statements
+          fi
+
+        ;;
+
+        04 )
+
+        ;;
+
+        05 )
+
+        ;;
+
+        10 )
+
+        ;;
+
+        11 )
+
+        ;;
+
+        13 )
+
+        ;;
+
+        20 )
+
+        ;;
+        21 )
+
+        ;;
+        22 )
+
+        ;;
+      esac
+
+    fi
+  fi
 }
