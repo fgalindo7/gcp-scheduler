@@ -30,12 +30,12 @@ For more information, see the README.md
 #depending on the time zone, it generates the start and the stop times (the active days are by default Monday through Friday)
 
 '''
---------------------------------------------------------------------------------
+--------------------------------------------------------------------------
 # GCP Zones Cities and UTC time zones
---------------------------------------------------------------------------------
+--------------------------------------------------------------------------
 #
 # Zones	                  GCP City		  Talend City   on (UTC)  off (UTC)
---------------------------------------------------------------------------------
+--------------------------------------------------------------------------
 asia-southeast1-b				  singapore		  bangalore			0030      1230
 asia-southeast1-a				  singapore		  bangalore		  0030      1230
 europe-west1-d				    belgium		 	  suresnes			0400      1600
@@ -69,7 +69,7 @@ asia-northeast1-b				  tokyo								        2100      0900
 asia-east1-a              taiwan			  beijing       2200      1000
 asia-east1-c              taiwan			  beijing       2200      1000
 asia-east1-b              taiwan			  beijing       2200      1000
---------------------------------------------------------------------------------
+--------------------------------------------------------------------------
 '''
 
 ## Global variables
@@ -86,8 +86,8 @@ thu='on'
 fri='on'
 
 
-# [START current_time]
-function current_time() {
+# [START get_current_time]
+function get_current_time() {
     # date +"[option]"
 
     # [option]	result
@@ -122,7 +122,7 @@ function current_time() {
     esac
 
     current_utc_hour = date -u +"%H"  # get the current hour (in UTC)
-} # [END current_time]
+} # [END get_current_time]
 
 
 
@@ -133,9 +133,15 @@ function get_current_instances() {
 
 } # [END get_current_instances]
 
+
 # [START replace_zone_with_city]
 function replace_zone_with_city() {
-    if [ -a gcp_instances_list.txt ]
+
+    if [[ -f gcp_instances_list.txt ]]
+        # make copy to keep zones
+        cp gcp_instances_list.txt gcp_instances_list_zones.txt
+
+        # replace zones with cities
         sed -i -e 's/asia-east1-a/taiwan/g' gcp_instances_list.txt
         sed -i -e 's/asia-east1-c/taiwan/g' gcp_instances_list.txt
         sed -i -e 's/asia-east1-b/taiwan/g' gcp_instances_list.txt
@@ -160,20 +166,21 @@ function replace_zone_with_city() {
         sed -i -e 's/us-central1-a/iowa/g' gcp_instances_list.txt
         sed -i -e 's/us-central1-f/iowa/g' gcp_instances_list.txt
         sed -i -e 's/us-central1-b/iowa/g' gcp_instances_list.txt
-        sed -i -e 's/us-east1-d/S.Carolina/g' gcp_instances_list.txt
-        sed -i -e 's/us-east1-c/S.Carolina/g' gcp_instances_list.txt
-        sed -i -e 's/us-east1-b/S.Carolina/g' gcp_instances_list.txt
-        sed -i -e 's/us-east4-b/N.Virginia/g' gcp_instances_list.txt
-        sed -i -e 's/us-east4-a/N.Virginia/g' gcp_instances_list.txt
-        sed -i -e 's/us-east4-c/N.Virginia/g' gcp_instances_list.txt
+        sed -i -e 's/us-east1-d/s_carolina/g' gcp_instances_list.txt
+        sed -i -e 's/us-east1-c/s_carolina/g' gcp_instances_list.txt
+        sed -i -e 's/us-east1-b/s_carolina/g' gcp_instances_list.txt
+        sed -i -e 's/us-east4-b/n_virginia/g' gcp_instances_list.txt
+        sed -i -e 's/us-east4-a/n_virginia/g' gcp_instances_list.txt
+        sed -i -e 's/us-east4-c/n_virginia/g' gcp_instances_list.txt
         sed -i -e 's/us-west1-b/oregon/g' gcp_instances_list.txt
         sed -i -e 's/us-west1-a/oregon/g' gcp_instances_list.txt
         sed -i -e 's/us-west1-c/oregon/g' gcp_instances_list.txt
       else
-        echo "gcp_instances_list.txt was not generated"
-        exit
+        echo "gcp_instances_list.txt not found"
+        exit 0
     fi
 }# [END replace_zone_with_city]
+
 
 
 # [START list_instances_by_zone]
@@ -222,14 +229,14 @@ function list_instances_by_zone() {
 
 # [START stop_instances]
 function stop_instances() {
-  gcloud compute instances stop $1 --$zone
+  gcloud compute instances stop $1 --zone $2
 } # [END stop_instances]
 
 
 
 # [START start_instances]
 function start_instances() {
-  gcloud compute instances start $1 --$zone
+  gcloud compute instances start $1 --zone $2
 } # [END start_instances]
 
 
@@ -244,7 +251,7 @@ function  main() {
       case $current_utc_hour in
         00 )
           if [[ condition ]]; then
-            #statements
+            # statements
           fi
 
         ;;
