@@ -185,37 +185,37 @@ function list_instances_by_zone() {
   while IFS=' ' read -r line || [[ -n "$line" ]]; do
       # taiwan
     if [[ `echo $line | awk '{print $2;}'` == "taiwan" ]] ; then
-      taiwan_instances+=(`echo $line | awk '{print $1}'`)
+      taiwan_instances+=(`echo $line | awk '{print $1}'`);
       # tokyo
     elif [[ `echo $line | awk '{print $2;}'` == "tokyo" ]]; then
-      tokyo_instances+=(`echo $line | awk '{print $1}'`)
+      tokyo_instances+=(`echo $line | awk '{print $1}'`);
       # singapore
     elif [[ `echo $line | awk '{print $2;}'` == "singapore" ]]; then
-      singapore_instances+=(`echo $line | awk '{print $1}'`)
+      singapore_instances+=(`echo $line | awk '{print $1}'`);
       # sydney
     elif [[ `echo $line | awk '{print $2;}'` == "sydney" ]]; then
-      sydney_instances+=(`echo $line | awk '{print $1}'`)
+      sydney_instances+=(`echo $line | awk '{print $1}'`);
       # belgium
     elif [[ `echo $line | awk '{print $2;}'` == "belgium" ]]; then
-      belgium_instances+=(`echo $line | awk '{print $1}'`)
+      belgium_instances+=(`echo $line | awk '{print $1}'`);
       # london
     elif [[ `echo $line | awk '{print $2;}'` == "london" ]]; then
-      london_instances+=(`echo $line | awk '{print $1}'`)
+      london_instances+=(`echo $line | awk '{print $1}'`);
       # frankfurt
     elif [[ `echo $line | awk '{print $2;}'` == "frankfurt" ]]; then
-      frankfurt_instances+=(`echo $line | awk '{print $1}'`)
+      frankfurt_instances+=(`echo $line | awk '{print $1}'`);
       # iowa
     elif [[ `echo $line | awk '{print $2;}'` == "iowa" ]]; then
-      iowa_instances+=(`echo $line | awk '{print $1}'`)
+      iowa_instances+=(`echo $line | awk '{print $1}'`);
       # s_carolina
     elif [[ `echo $line | awk '{print $2;}'` == "s_carolina" ]]; then
-      s_carolina_instances+=(`echo $line | awk '{print $1}'`)
+      s_carolina_instances+=(`echo $line | awk '{print $1}'`);
       #n_virginia
     elif [[ `echo $line | awk '{print $2;}'` == "n_virginia" ]]; then
-      n_virgina_instances+=(`echo $line | awk '{print $1}'`)
+      n_virgina_instances+=(`echo $line | awk '{print $1}'`);
       # oregon
     elif [[ `echo $line | awk '{print $2;}'` == "oregon" ]]; then
-      oregon_instances+=(`echo $line | awk '{print $1}'`)
+      oregon_instances+=(`echo $line | awk '{print $1}'`);
     fi;
   done < "gcp_instances_list.txt"
 
@@ -244,59 +244,18 @@ function  main() {
   if [ $current_utc_week_day != 'sat' ] && [ $current_utc_week_day != 's' ]
     if [ $current_utc_week_day != 'sat' ] && [ $current_utc_week_day != 'sat' ]
 
+
       case $current_utc_hour in
         00 )
-          pattern=${bangalore_instances[*]}
-          if [[ `awk -v pat="$pattern" '$0~pat{print $3 }' gcp_instances_list_raw.txt` == 'RUNNING' ]]; then
-            # statements
-          fi
-
-
-          # 564  echo $taiwan_instances
-          #   565  gcloud compute instances status
-          #   566  gcloud compute instances list | grep STATUS
-          #   567  echo $taiwan_instances[*]
-          #   568  echo ${taiwan_instances[*]}
-          #   569  awk '`echo ${taiwan_instances[*]}` {print $2}' gcp_instances_list.txt
-          #   570  awk '`echo ${taiwan_instances[1]}` {print $2}' gcp_instances_list.txt
-          #   571  awk '/`echo ${taiwan_instances[1]}`/ {print $2}' gcp_instances_list.txt
-          #   572  cat gcp_instances_list.txt
-          #   573  cd ~
-          #   574* awk '/`echo ${taiwan_instances[1]}`/ {print $3}' gcp_instances_list.txt
-          #   575  cat gcp_instances_list.txt
-          #   576  awk '/`echo ${taiwan_instances[1]}`/ {print $2}' gcp_instances_list.txt
-          #   577  echo awk '/`echo ${taiwan_instances[1]}`/ {print $2}' gcp_instances_list.txt
-          #   578  `echo ${taiwan_instances[1]}`
-          #   579  echo ${taiwan_instances[1]}
-          #   580  echo ${taiwan_instances[0]}
-          #   581  echo awk '/echo ${taiwan_instances[1]}/ {print $2}' gcp_instances_list.txt
-          #   582  awk '/echo ${taiwan_instances[1]}/ {print $2}' gcp_instances_list.txt
-          #   583  awk '/`echo ${taiwan_instances[1]}`/ {print $2}' gcp_instances_list.txt
-          #   584  pattern=${taiwan_instances[0]}
-          #   585  awk '/$pattern/{print $2}' gcp_instances_list.txt
-          #   586  awk '/vm-zqin-test/{print $2}' gcp_instances_list.txt
-          #   587  awk '/vm-zqin-test/{print $3}' gcp_instances_list.txt
-          #   588  echo $pattern
-          #   589  awk '/`$pattern`/{print $3}' gcp_instances_list.txt
-          #   590  awk '/$pattern/{print $3}' gcp_instances_list.txt
-          #   591  awk '-v pattern="$pattern" {print $3}' gcp_instances_list.txt
-          #   592  awk '-v pattern="$pattern" {print $3}' gcp_instances_list.txt
-          #   593  awk -v pat="$pattern" -F ":" '$0~pat{print $3 }' gcp_instances_list.txt
-          #   594  awk -v pat="$pattern" '$0~pat{print $3 }' gcp_instances_list.txt
-          #   595  pattern=${taiwan_instances[*]}
-          #   596  echo $pattern
-          #   597  awk -v pat="$pattern" '$0~pat{print $3 }' gcp_instances_list.txt
-          #   598  awk -v pat="$pattern" '~pat{print $3}' gcp_instances_list.txt
-          #   599  awk -v pat="$pattern" '$0~pat{print $3}' gcp_instances_list.txt
-          #   600  pattern=${taiwan_instances[1]}
-          #   601  awk -v pat="$pattern" '$0~pat{print $3}' gcp_instances_list.txt
-          #   602  pattern=${taiwan_instances[*]}
-          #   603  echo $pattern
-          #   604  awk -v pat="$pattern" '$2~pat{print $3}' gcp_instances_list.txt
-          #   605  awk -v pat="$pattern" '$0~pat{print $3}' gcp_instances_list.txt
-          #   606  cat gcp_instances_list.txt
-          #   607  history
-
+            for i in "${taiwan_instances[@]}"; do {
+                instance_name="$i";
+                status=`awk -v pat="$instance_name" '$0~pat{print $3}' gcp_instances_list.txt`;
+                if [[ $status == 'RUNNING' ]] ; then
+                    zone=`awk -v pat="$instance_name" '$0~pat{print $2}' gcp_instances_list.txt`;
+                    echo "Instance $instance_name with status 'RUNNING' in ZONE will start" >> gpc_instances_start-stop.log;
+                    start_instances "$instance_name" "$zone"
+                fi }
+            done
         ;;
 
         04 )
