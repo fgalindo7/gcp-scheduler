@@ -15,26 +15,22 @@
 # limitations under the License.
 
 
-"""
+'''
 Scheduler to be run hourly as a cronjob under /etc/crontab
 Starts stops machines depending on their schedule and zone
 List of active environment names with their respective UTC schedule, e.g.:
 vm-fgalindo-windowsserver-datafabric-631-00055555,start;stop;<active_days>
+
+the script pulls the current names of environments from GCP,
+depending on the time zone, it generates the start and stop
+gcloud commands (Monday through Friday)
+
 For more information, see the README.md
-"""
 
-
-
-
-# by default, the script pulls the current names of environments from GCP,
-#depending on the time zone, it generates the start and the stop times (the active days are by default Monday through Friday)
-
-'''
 --------------------------------------------------------------------------
-# GCP Zones Cities and UTC time zones
+GCP zones, cities, and UTC start and stop times
 --------------------------------------------------------------------------
-#
-# Zones	                  GCP City		  Talend City   on (UTC)  off (UTC)
+zones	                    GCP city		  Talend city   on (UTC)  off (UTC)
 --------------------------------------------------------------------------
 asia-southeast1-b				  singapore		  bangalore			0030      1230
 asia-southeast1-a				  singapore		  bangalore		  0030      1230
@@ -47,9 +43,9 @@ europe-west3-a				    frankfurt		  bonn				  0400      1600
 europe-west2-c				    london			  london				0500      1700
 europe-west2-a				    london			  london				0500      1700
 europe-west2-b				    london		    london				0500      1700
-us-east1-d					      s_carolina	   atlanta			1000      2200
-us-east1-c					      s_carolina	   atlanta			1000      2200
-us-east1-b		      		  s_carolina	   atlanta			1000      2200
+us-east1-d					      s_carolina	  atlanta			  1000      2200
+us-east1-c					      s_carolina	  atlanta			  1000      2200
+us-east1-b		      		  s_carolina	  atlanta			  1000      2200
 us-central1-c					    iowa								        1100      2300
 us-central1-a					    iowa								        1100      2300
 us-central1-f					    iowa								        1100      2300
@@ -57,9 +53,9 @@ us-central1-b					    iowa								        1100      2300
 us-east4-b				        n_virginia	 						    1100      2300
 us-east4-a				        n_virginia	 						    1100      2300
 us-east4-c					      n_virginia	 						    1100      2300
-us-west1-b					      oregon			   irvine				1300      0100
-us-west1-a                oregon			   irvine				1300      0100
-us-west1-c                oregon			   irvine				1300      0100
+us-west1-b					      oregon			  irvine				1300      0100
+us-west1-a                oregon			  irvine				1300      0100
+us-west1-c                oregon			  irvine				1300      0100
 australia-southeast1-a		sydney							        2000      0800
 australia-southeast1-c		sydney			   		          2000      0800
 australia-southeast1-b		sydney	   							    2000      0800
@@ -74,7 +70,7 @@ asia-east1-b              taiwan			  beijing       2200      1000
 
 ## Global variables
 
-start_time=6
+start_time=06
 stop_time=20
 
 weekends='off'
@@ -139,7 +135,7 @@ function replace_zone_with_city() {
 
     if [[ -f gcp_instances_list.txt ]]
         # make copy to keep zones
-        cp gcp_instances_list.txt gcp_instances_list_zones.txt
+        cp gcp_instances_list.txt gcp_instances_list_raw.txt
 
         # replace zones with cities
         sed -i -e 's/asia-east1-a/taiwan/g' gcp_instances_list.txt
@@ -250,9 +246,56 @@ function  main() {
 
       case $current_utc_hour in
         00 )
-          if [[ condition ]]; then
+          pattern=${bangalore_instances[*]}
+          if [[ `awk -v pat="$pattern" '$0~pat{print $3 }' gcp_instances_list_raw.txt` == 'RUNNING' ]]; then
             # statements
           fi
+
+
+          # 564  echo $taiwan_instances
+          #   565  gcloud compute instances status
+          #   566  gcloud compute instances list | grep STATUS
+          #   567  echo $taiwan_instances[*]
+          #   568  echo ${taiwan_instances[*]}
+          #   569  awk '`echo ${taiwan_instances[*]}` {print $2}' gcp_instances_list.txt
+          #   570  awk '`echo ${taiwan_instances[1]}` {print $2}' gcp_instances_list.txt
+          #   571  awk '/`echo ${taiwan_instances[1]}`/ {print $2}' gcp_instances_list.txt
+          #   572  cat gcp_instances_list.txt
+          #   573  cd ~
+          #   574* awk '/`echo ${taiwan_instances[1]}`/ {print $3}' gcp_instances_list.txt
+          #   575  cat gcp_instances_list.txt
+          #   576  awk '/`echo ${taiwan_instances[1]}`/ {print $2}' gcp_instances_list.txt
+          #   577  echo awk '/`echo ${taiwan_instances[1]}`/ {print $2}' gcp_instances_list.txt
+          #   578  `echo ${taiwan_instances[1]}`
+          #   579  echo ${taiwan_instances[1]}
+          #   580  echo ${taiwan_instances[0]}
+          #   581  echo awk '/echo ${taiwan_instances[1]}/ {print $2}' gcp_instances_list.txt
+          #   582  awk '/echo ${taiwan_instances[1]}/ {print $2}' gcp_instances_list.txt
+          #   583  awk '/`echo ${taiwan_instances[1]}`/ {print $2}' gcp_instances_list.txt
+          #   584  pattern=${taiwan_instances[0]}
+          #   585  awk '/$pattern/{print $2}' gcp_instances_list.txt
+          #   586  awk '/vm-zqin-test/{print $2}' gcp_instances_list.txt
+          #   587  awk '/vm-zqin-test/{print $3}' gcp_instances_list.txt
+          #   588  echo $pattern
+          #   589  awk '/`$pattern`/{print $3}' gcp_instances_list.txt
+          #   590  awk '/$pattern/{print $3}' gcp_instances_list.txt
+          #   591  awk '-v pattern="$pattern" {print $3}' gcp_instances_list.txt
+          #   592  awk '-v pattern="$pattern" {print $3}' gcp_instances_list.txt
+          #   593  awk -v pat="$pattern" -F ":" '$0~pat{print $3 }' gcp_instances_list.txt
+          #   594  awk -v pat="$pattern" '$0~pat{print $3 }' gcp_instances_list.txt
+          #   595  pattern=${taiwan_instances[*]}
+          #   596  echo $pattern
+          #   597  awk -v pat="$pattern" '$0~pat{print $3 }' gcp_instances_list.txt
+          #   598  awk -v pat="$pattern" '~pat{print $3}' gcp_instances_list.txt
+          #   599  awk -v pat="$pattern" '$0~pat{print $3}' gcp_instances_list.txt
+          #   600  pattern=${taiwan_instances[1]}
+          #   601  awk -v pat="$pattern" '$0~pat{print $3}' gcp_instances_list.txt
+          #   602  pattern=${taiwan_instances[*]}
+          #   603  echo $pattern
+          #   604  awk -v pat="$pattern" '$2~pat{print $3}' gcp_instances_list.txt
+          #   605  awk -v pat="$pattern" '$0~pat{print $3}' gcp_instances_list.txt
+          #   606  cat gcp_instances_list.txt
+          #   607  history
 
         ;;
 
