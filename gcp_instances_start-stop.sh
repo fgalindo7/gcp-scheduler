@@ -320,14 +320,15 @@ function instances_start_stop() {
         echo "Instance: $instance_name"
 
         # get status of instance i
-        status=`awk -v pat=$instance_name '$0~pat{print $3}' gcp_instances_list_raw.txt`;
+        status=`awk -v pat="$instance_name " '$0 ~ pat {print $3}' gcp_instances_list_raw.txt`;
         echo "Status: $status"
 
         # get city of instance i
-        city=`awk -v pat=$instance_name '$0~pat{print $2}' gcp_instances_list.txt`;
+        city=`awk -v pat="$instance_name " '$0 ~ pat {print $2}' gcp_instances_list.txt`;
         echo "City: $city"
 
-        zone=`awk -v pat=$instance_name '$0~pat{print $2}' gcp_instances_list_raw.txt`
+        # get zone of instance i
+        zone=`awk -v pat="$instance_name " '$0 ~ pat {print $2}' gcp_instances_list_raw.txt`
 
         # action_on_instance function to see if instance should be started or stoppped
         action_on_instance $city
