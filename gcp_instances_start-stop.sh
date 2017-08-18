@@ -116,12 +116,8 @@ function get_current_time() {
       ;;
     esac
 
-    utc_hour=`date -u +"%H"`;  # get the current hour (in UTC)
-
-    echo "[START get_current_time]"
-    echo "$utc_hour"
-    echo "$utc_week_day"
-    echo "[END get_current_time]"
+    utc_hour=`date -u +"%H"`  # get the current hour (in UTC)
+    time_stamp=`date -u +"%m.%d.%Y-%H%M%S"`
 }
 # [END get_current_time]
 
@@ -130,7 +126,7 @@ function get_current_time() {
 # [START get_current_instances]
 function get_current_instances() {
     # list of NAME ZONE STATUS without header sorted by zone
-    gcloud compute instances list | awk 'NR>1{print $1, $2, $NF}' | sort -t$' ' -k2 > gcp_instances_list.txt
+    gcloud compute instances list | awk 'NR>1{print $1, $2, $NF}' > gcp_instances_list.txt
 }
 # [END get_current_instances]
 
@@ -184,46 +180,13 @@ function replace_zone_with_city() {
 
 
 
-# [START group_instances_by_zone]
-function group_instances_by_zone() {
-  while IFS=' ' read -r line || [[ -n ${line} ]]; do
-      # taiwan
-    if [[ `echo ${line} | awk '{print $2;}'` == 'taiwan' ]] ; then
-      taiwan_instances+=(`echo ${line} | awk '{print $1}'`);
-      # tokyo
-    elif [[ `echo ${line} | awk '{print $2;}'` == "tokyo" ]]; then
-      tokyo_instances+=(`echo ${line} | awk '{print $1}'`);
-      # singapore
-    elif [[ `echo ${line} | awk '{print $2;}'` == "singapore" ]]; then
-      singapore_instances+=(`echo ${line} | awk '{print $1}'`);
-      # sydney
-    elif [[ `echo ${line} | awk '{print $2;}'` == "sydney" ]]; then
-      sydney_instances+=(`echo ${line} | awk '{print $1}'`);
-      # belgium
-    elif [[ `echo ${line} | awk '{print $2;}'` == "belgium" ]]; then
-      belgium_instances+=(`echo ${line} | awk '{print $1}'`);
-      # london
-    elif [[ `echo ${line} | awk '{print $2;}'` == "london" ]]; then
-      london_instances+=(`echo ${line} | awk '{print $1}'`);
-      # frankfurt
-    elif [[ `echo ${line} | awk '{print $2;}'` == "frankfurt" ]]; then
-      frankfurt_instances+=(`echo ${line} | awk '{print $1}'`);
-      # iowa
-    elif [[ `echo ${line} | awk '{print $2;}'` == "iowa" ]]; then
-      iowa_instances+=(`echo ${line} | awk '{print $1}'`);
-      # s_carolina
-    elif [[ `echo ${line} | awk '{print $2;}'` == "s_carolina" ]]; then
-      s_carolina_instances+=(`echo ${line} | awk '{print $1}'`);
-      #n_virginia
-    elif [[ `echo ${line} | awk '{print $2;}'` == "n_virginia" ]]; then
-      n_virgina_instances+=(`echo ${line} | awk '{print $1}'`);
-      # oregon
-    elif [[ `echo ${line} | awk '{print $2;}'` == "oregon" ]]; then
-      oregon_instances+=(`echo ${line} | awk '{print $1}'`);
-    fi;
+# [START create_instances_array]
+function create_instances_array() {
+  while IFS=' ' read -r line || [[ -n ${line} ]] ; do
+    instances_arr+=(`echo ${line} | awk '{print $1;}'`)
   done < "gcp_instances_list.txt"
 }
-# [END group_instances_by_zone]
+# [END create_instances_array]
 
 
 
@@ -244,82 +207,104 @@ function start_instances() {
 
 # [START action_on_instance]
 function action_on_instance() {
-  local city=$1
-  case $city in
+  local gcp_city=$1
+  case $gcp_city in
     'singapore' )
-    if [[ utc_hour==00 ]]; then
-      action='start'
-    elif [[ utc_hour==13 ]]; then
-      action='stop'
-    fi
+            if [[ ${utc_hour} -eq 00 ]]; then
+              action='start'
+            elif [[ ${utc_hour} -eq 13 ]]; then
+              action='stop'
+            else
+              action='none'
+            fi
     ;;
 
     'belgium'|'frankfurt')
-      if [[ utc_hour==04 ]]; then
-        action='start'
-      elif [[ utc_hour==16 ]]; then
-        action='stop'
-      fi
+              if [[ ${utc_hour} -eq 04 ]]; then
+                action='start'
+              elif [[ ${utc_hour} -eq 16 ]]; then
+                action='stop'
+              else
+                action='none'
+              fi
     ;;
 
     'london' )
-    if [[ utc_hour==05 ]]; then
-      action='start'
-    elif [[ utc_hour==17 ]]; then
-      action='stop'
-    fi
+            if [[ $utc_hour -eq 05 ]]; then
+              action='start';
+            elif [[ $utc_hour -eq 17 ]]; then
+              action='stop' ;
+            else action='none' ; fi
     ;;
 
     's_carolina' )
-    if [[ utc_hour==00 ]]; then
-      action='start'
-    elif [[ utc_hour==13 ]]; then
-      action='stop'
-    fi
+            if [[ ${utc_hour} -eq 01 ]]; then
+              action='start'
+            elif [[ ${utc_hour} -eq 13 ]]; then
+              action='stop'
+            else
+              action='none'
+            fi
     ;;
 
     'iowa' )
-      if [[ utc_hour==10 ]]; then
-        action='start'
-      elif [[ utc_hour==22 ]]; then
-        action='stop'
-      fi
+              if [[ ${utc_hour} -eq 10 ]]; then
+                action='start'
+              elif [[ u${utc_hour} -eq 22 ]]; then
+                action='stop'
+              else
+                action='none'
+              fi
     ;;
 
     'n_virginia' )
-      if [[ utc_hour==11 ]]; then
-        action='start'
-      elif [[ utc_hour==23 ]]; then
-        action='stop'
-      fi
+              if [[ ${utc_hour} -eq 11 ]]; then
+                action='start'
+              elif [[ ${utc_hour} -eq 23 ]]; then
+                action='stop'
+              else
+                action='none'
+              fi
     ;;
+
     'oregon' )
-      if [[ utc_hour==13 ]]; then
-        action='start'
-      elif [[ utc_hour==01 ]]; then
-        action='stop'
-      fi
+              if [[ ${utc_hour} -eq 13 ]]; then
+                action='start'
+              elif [[ ${utc_hour} -eq 01 ]]; then
+                action='stop'
+              else
+                action='none'
+              fi
     ;;
+
     'sydney' )
-      if [[ utc_hour==20 ]]; then
-        action='start'
-      elif [[ utc_hour==08 ]]; then
-        action='stop'
-      fi
+              if [[ ${utc_hour} -eq 20 ]]; then
+                action='start'
+              elif [[ ${utc_hour} -eq 08 ]]; then
+                action='stop'
+              else
+                action='none'
+              fi
     ;;
+
     'tokyo' )
-      if [[ utc_hour==21 ]]; then
-        action='start'
-      elif [[ utc_hour==09 ]]; then
-        action='stop'
-      fi
+              if [[ ${utc_hour} -eq 21 ]]; then
+                action='start'
+              elif [[ ${utc_hour} -eq 09 ]]; then
+                action='stop'
+              else
+                action='none'
+              fi
     ;;
+
     'taiwan' )
-      if [[ utc_hour==22 ]]; then
-        action='start'
-      elif [[ utc_hour==10 ]]; then
-        action='stop'
-      fi
+              if [[ ${utc_hour} -eq 22 ]]; then
+                action='start'
+              elif [[ ${utc_hour} -eq 10 ]]; then
+                action='stop'
+              else
+                action='none'
+              fi
     ;;
   esac
 }
@@ -330,32 +315,41 @@ function action_on_instance() {
 # [START instances_start_stop]
 function instances_start_stop() {
       # loop through instances to start or stop
-      for i in "${instances[@]}"; do {
-        instance_name=${i};
+      for i in "${instances_arr[@]}"; do {
+        instance_name=${i}
+        echo "Instance: $instance_name"
 
         # get status of instance i
-        status=`awk -v pat=$instance_name '$0~pat{print $3}' gcp_instances_list.txt`;
+        status=`awk -v pat=$instance_name '$0~pat{print $3}' gcp_instances_list_raw.txt`;
+        echo "Status: $status"
+
         # get city of instance i
         city=`awk -v pat=$instance_name '$0~pat{print $2}' gcp_instances_list.txt`;
+        echo "City: $city"
+
+        zone=`awk -v pat=$instance_name '$0~pat{print $2}' gcp_instances_list_raw.txt`
+
         # action_on_instance function to see if instance should be started or stoppped
         action_on_instance $city
+        echo "Action: $action"
+        echo ""
 
-        echo "about to enter"
+
+
         # make sure it's not a weekend before starting or stopping
         if [ $utc_week_day != 'sat' ] && [ $utc_week_day != 'sun' ] ; then
           if [[ ${status} == 'TERMINATED' && ${action} == 'start' ]] ; then
-              zone=`awk -v pat=$instance_name '$0~pat{print $2}' gcp_instances_list.txt`;
-              echo "Instance $instance_name with status ${status} in ZONE ${zone} will start" >> gpc_instances_start-stop.log;
+              echo "INSTANCE $instance_name with STATUS ${status} in ZONE ${zone} will start" >> gpc_instances_start-stop_$time_stamp.log
               #start_instances "$instance_name" "${zone}";
             elif [[ ${status} == 'RUNNING' && ${action} == 'stop' ]]; then
-              echo "Instance $instance_name with status ${status} in ZONE ${zone} will stop" >> gpc_instances_start-stop.log;
-              stop_instances "$instance_name" "${zone}";
+              echo "INSTANCE $instance_name with STATUS ${status} in ZONE ${zone} will stop" >> gpc_instances_start-stop_$time_stamp.log
+              #stop_instances "$instance_name" "${zone}";
             else
-              echo "Instance $instance_name with status ${status} in ZONE ${zone} will stay put";
+              echo "INSTANCE $instance_name with STATUS ${status} in ZONE ${zone} will stay ${status}" >> gpc_instances_start-stop_$time_stamp.log
           fi
         else
-          echo "$utc_week_day crontab is not working.";
-          echo "Instances will stay as under their current state"
+          echo "$utc_week_day crontab takes weekdays off."
+          echo "Instances will stay as their current state"
         fi
 
       } done
@@ -367,7 +361,7 @@ function instances_start_stop() {
 # [MAIN start]
 get_current_time
 get_current_instances
+create_instances_array
 replace_zone_with_city
-create_instance_arrays_by_zone
 instances_start_stop
 # [END]
