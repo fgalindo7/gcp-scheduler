@@ -342,13 +342,13 @@ function instances_start_stop() {
         # make sure it's not a weekend before starting or stopping
         if [ $utc_week_day != 'sat' ] && [ $utc_week_day != 'sun' ] ; then
           if [[ ${status} == 'TERMINATED' && ${action} == 'start' ]] ; then
-              echo "INSTANCE $instance_name with STATUS ${status} in ZONE ${zone} will start" >> gpc_instances_start-stop_$time_stamp.log
-              start_instances "$instance_name" "${zone}" >> gpc_instances_start-stop_$time_stamp.log
+              echo "INSTANCE $instance_name with STATUS ${status} in ZONE ${zone} will start" >> logs/gpc_instances_start-stop_$time_stamp.log
+              start_instances "$instance_name" "${zone}" >> logs/gpc_instances_start-stop_$time_stamp.log
             elif [[ ${status} == 'RUNNING' && ${action} == 'stop' ]]; then
-              echo "INSTANCE $instance_name with STATUS ${status} in ZONE ${zone} will stop" >> gpc_instances_start-stop_$time_stamp.log
-              stop_instances "$instance_name" "${zone}" >> gpc_instances_start-stop_$time_stamp.log
+              echo "INSTANCE $instance_name with STATUS ${status} in ZONE ${zone} will stop" >> logs/gpc_instances_start-stop_$time_stamp.log
+              stop_instances "$instance_name" "${zone}" >> logs/gpc_instances_start-stop_$time_stamp.log
             else
-              echo "INSTANCE $instance_name with STATUS ${status} in ZONE ${zone} will stay ${status}" >> gpc_instances_start-stop_$time_stamp.log
+              echo "INSTANCE $instance_name with STATUS ${status} in ZONE ${zone} will stay ${status}" >> logs/gpc_instances_start-stop_$time_stamp.log
           fi
         else
           echo "$utc_week_day crontab takes weekdays off."
