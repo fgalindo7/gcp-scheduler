@@ -317,23 +317,23 @@ function instances_start_stop() {
       # loop through instances to start or stop
       for i in "${instances_arr[@]}"; do {
         instance_name=${i}
-        echo "Instance: $instance_name"
+        # echo "Instance: $instance_name"
 
         # get status of instance i
         status=`awk -v pat="$instance_name " '$0 ~ pat {print $3}' gcp_instances_list_raw.txt`;
-        echo "Status: $status"
+        # echo "Status: $status"
 
         # get city of instance i
         city=`awk -v pat="$instance_name " '$0 ~ pat {print $2}' gcp_instances_list.txt`;
-        echo "City: $city"
+        # echo "City: $city"
 
         # get zone of instance i
         zone=`awk -v pat="$instance_name " '$0 ~ pat {print $2}' gcp_instances_list_raw.txt`
 
         # action_on_instance function to see if instance should be started or stoppped
         action_on_instance $city
-        echo "Action: $action"
-        echo ""
+        # echo "Action: $action"
+        # echo ""
 
 
 
@@ -341,10 +341,10 @@ function instances_start_stop() {
         if [ $utc_week_day != 'sat' ] && [ $utc_week_day != 'sun' ] ; then
           if [[ ${status} == 'TERMINATED' && ${action} == 'start' ]] ; then
               echo "INSTANCE $instance_name with STATUS ${status} in ZONE ${zone} will start" >> gpc_instances_start-stop_$time_stamp.log
-              #start_instances "$instance_name" "${zone}";
+              start_instances "$instance_name" "${zone}" >> gpc_instances_start-stop_$time_stamp.log
             elif [[ ${status} == 'RUNNING' && ${action} == 'stop' ]]; then
               echo "INSTANCE $instance_name with STATUS ${status} in ZONE ${zone} will stop" >> gpc_instances_start-stop_$time_stamp.log
-              #stop_instances "$instance_name" "${zone}";
+              stop_instances "$instance_name" "${zone}" >> gpc_instances_start-stop_$time_stamp.log
             else
               echo "INSTANCE $instance_name with STATUS ${status} in ZONE ${zone} will stay ${status}" >> gpc_instances_start-stop_$time_stamp.log
           fi
