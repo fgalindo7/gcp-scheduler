@@ -249,9 +249,11 @@ function action_on_instance() {
 
     'iowa' )
               if [[ ${utc_hour} -eq 10 ]]; then
-                action='start'
+                # action='start'
+                action='none'
               elif [[ u${utc_hour} -eq 22 ]]; then
-                action='stop'
+                # action='stop'
+                action='none'
               else
                 action='none'
               fi
