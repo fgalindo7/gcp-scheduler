@@ -1,5 +1,7 @@
 #!/bin/sh
 
+source ~/.bashrc
+
 # Copyright 2017 Talend Inc. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -368,7 +370,7 @@ function instances_start_stop() {
           echo "$utc_week_day crontab takes weekdays off."
           echo "Instances will stay as their current state"
         fi
-	fi 
+	fi
       } done
 }
 # [START instances_start_stop]
