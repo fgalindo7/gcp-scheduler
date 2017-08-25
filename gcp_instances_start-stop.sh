@@ -81,6 +81,18 @@
 # fri='on'
 
 
+function make_directories() {
+
+if [ ! -d 'environments' ]; then
+	mkdir environments
+fi
+
+if [ ! -d 'logs' ]; then
+	mkdir logs
+fi
+}
+
+
 # [START get_current_time]
 function get_current_time() {
     # date +"[option]"
@@ -126,53 +138,53 @@ function get_current_time() {
 # [START get_current_instances]
 function get_current_instances() {
     # list of NAME ZONE STATUS without header sorted by zone
-    gcloud compute instances list | awk 'NR>1{print $1, $2, $NF}' > gcp_instances_list.txt
+    gcloud compute instances list | awk 'NR>1{print $1, $2, $NF}' > environments/gcp_instances_list.txt
 }
 # [END get_current_instances]
 
 
 # [START replace_zone_with_city]
 function replace_zone_with_city() {
-    if [[ -f gcp_instances_list.txt ]] ; then
+    if [[ -f environments/gcp_instances_list.txt ]] ; then
         # make copy to keep zones
-        cp gcp_instances_list.txt gcp_instances_list_raw.txt
+        cp environments/gcp_instances_list.txt environments/gcp_instances_list_raw.txt
 
         # replace zones with cities
-        sed -i -e 's/asia-east1-a/taiwan/g' gcp_instances_list.txt
-        sed -i -e 's/asia-east1-c/taiwan/g' gcp_instances_list.txt
-        sed -i -e 's/asia-east1-b/taiwan/g' gcp_instances_list.txt
-        sed -i -e 's/asia-northeast1-c/tokyo/g' gcp_instances_list.txt
-        sed -i -e 's/asia-northeast1-a/tokyo/g' gcp_instances_list.txt
-        sed -i -e 's/asia-northeast1-b/tokyo/g' gcp_instances_list.txt
-        sed -i -e 's/asia-southeast1-b/singapore/g' gcp_instances_list.txt
-        sed -i -e 's/asia-southeast1-a/singapore/g' gcp_instances_list.txt
-        sed -i -e 's/australia-southeast1-a/sydney/g' gcp_instances_list.txt
-        sed -i -e 's/australia-southeast1-c/sydney/g' gcp_instances_list.txt
-        sed -i -e 's/australia-southeast1-b/sydney/g' gcp_instances_list.txt
-        sed -i -e 's/europe-west1-d/belgium/g' gcp_instances_list.txt
-        sed -i -e 's/europe-west1-c/belgium/g' gcp_instances_list.txt
-        sed -i -e 's/europe-west1-b/belgium/g' gcp_instances_list.txt
-        sed -i -e 's/europe-west2-c/london/g' gcp_instances_list.txt
-        sed -i -e 's/europe-west2-a/london/g' gcp_instances_list.txt
-        sed -i -e 's/europe-west2-b/london/g' gcp_instances_list.txt
-        sed -i -e 's/europe-west3-b/frankfurt/g' gcp_instances_list.txt
-        sed -i -e 's/europe-west3-c/frankfurt/g' gcp_instances_list.txt
-        sed -i -e 's/europe-west3-a/frankfurt/g' gcp_instances_list.txt
-        sed -i -e 's/us-central1-c/iowa/g' gcp_instances_list.txt
-        sed -i -e 's/us-central1-a/iowa/g' gcp_instances_list.txt
-        sed -i -e 's/us-central1-f/iowa/g' gcp_instances_list.txt
-        sed -i -e 's/us-central1-b/iowa/g' gcp_instances_list.txt
-        sed -i -e 's/us-east1-d/s_carolina/g' gcp_instances_list.txt
-        sed -i -e 's/us-east1-c/s_carolina/g' gcp_instances_list.txt
-        sed -i -e 's/us-east1-b/s_carolina/g' gcp_instances_list.txt
-        sed -i -e 's/us-east4-b/n_virginia/g' gcp_instances_list.txt
-        sed -i -e 's/us-east4-a/n_virginia/g' gcp_instances_list.txt
-        sed -i -e 's/us-east4-c/n_virginia/g' gcp_instances_list.txt
-        sed -i -e 's/us-west1-b/oregon/g' gcp_instances_list.txt
-        sed -i -e 's/us-west1-a/oregon/g' gcp_instances_list.txt
-        sed -i -e 's/us-west1-c/oregon/g' gcp_instances_list.txt
+        sed -i -e 's/asia-east1-a/taiwan/g' environments/gcp_instances_list.txt
+        sed -i -e 's/asia-east1-c/taiwan/g' environments/gcp_instances_list.txt
+        sed -i -e 's/asia-east1-b/taiwan/g' environments/gcp_instances_list.txt
+        sed -i -e 's/asia-northeast1-c/tokyo/g' environments/gcp_instances_list.txt
+        sed -i -e 's/asia-northeast1-a/tokyo/g' environments/gcp_instances_list.txt
+        sed -i -e 's/asia-northeast1-b/tokyo/g' environments/gcp_instances_list.txt
+        sed -i -e 's/asia-southeast1-b/singapore/g' environments/gcp_instances_list.txt
+        sed -i -e 's/asia-southeast1-a/singapore/g' environments/gcp_instances_list.txt
+        sed -i -e 's/australia-southeast1-a/sydney/g' environments/gcp_instances_list.txt
+        sed -i -e 's/australia-southeast1-c/sydney/g' environments/gcp_instances_list.txt
+        sed -i -e 's/australia-southeast1-b/sydney/g' environments/gcp_instances_list.txt
+        sed -i -e 's/europe-west1-d/belgium/g' environments/gcp_instances_list.txt
+        sed -i -e 's/europe-west1-c/belgium/g' environments/gcp_instances_list.txt
+        sed -i -e 's/europe-west1-b/belgium/g' environments/gcp_instances_list.txt
+        sed -i -e 's/europe-west2-c/london/g' environments/gcp_instances_list.txt
+        sed -i -e 's/europe-west2-a/london/g' environments/gcp_instances_list.txt
+        sed -i -e 's/europe-west2-b/london/g' environments/gcp_instances_list.txt
+        sed -i -e 's/europe-west3-b/frankfurt/g' environments/gcp_instances_list.txt
+        sed -i -e 's/europe-west3-c/frankfurt/g' environments/gcp_instances_list.txt
+        sed -i -e 's/europe-west3-a/frankfurt/g' environments/gcp_instances_list.txt
+        sed -i -e 's/us-central1-c/iowa/g' environments/gcp_instances_list.txt
+        sed -i -e 's/us-central1-a/iowa/g' environments/gcp_instances_list.txt
+        sed -i -e 's/us-central1-f/iowa/g' environments/gcp_instances_list.txt
+        sed -i -e 's/us-central1-b/iowa/g' environments/gcp_instances_list.txt
+        sed -i -e 's/us-east1-d/s_carolina/g' environments/gcp_instances_list.txt
+        sed -i -e 's/us-east1-c/s_carolina/g' environments/gcp_instances_list.txt
+        sed -i -e 's/us-east1-b/s_carolina/g' environments/gcp_instances_list.txt
+        sed -i -e 's/us-east4-b/n_virginia/g' environments/gcp_instances_list.txt
+        sed -i -e 's/us-east4-a/n_virginia/g' environments/gcp_instances_list.txt
+        sed -i -e 's/us-east4-c/n_virginia/g' environments/gcp_instances_list.txt
+        sed -i -e 's/us-west1-b/oregon/g' environments/gcp_instances_list.txt
+        sed -i -e 's/us-west1-a/oregon/g' environments/gcp_instances_list.txt
+        sed -i -e 's/us-west1-c/oregon/g' environments/gcp_instances_list.txt
       else
-        echo "gcp_instances_list.txt not found"
+        echo "environments/gcp_instances_list.txt not found"
         exit 0
     fi
 }
@@ -184,7 +196,7 @@ function replace_zone_with_city() {
 function create_instances_array() {
   while IFS=' ' read -r line || [[ -n ${line} ]] ; do
     instances_arr+=(`echo ${line} | awk '{print $1;}'`)
-  done < "gcp_instances_list.txt"
+  done < "environments/gcp_instances_list.txt"
 }
 # [END create_instances_array]
 
@@ -210,7 +222,7 @@ function action_on_instance() {
   local gcp_city=$1
   case $gcp_city in
     'singapore' )
-            if [[ ${utc_hour} -eq 00 ]]; then
+            if [[ ${utc_hour} -eq '10#00' ]]; then
               action='start'
             elif [[ ${utc_hour} -eq 13 ]]; then
               action='stop'
@@ -220,7 +232,7 @@ function action_on_instance() {
     ;;
 
     'belgium'|'frankfurt')
-              if [[ ${utc_hour} -eq 04 ]]; then
+              if [[ ${utc_hour} -eq '10#04' ]]; then
                 action='start'
               elif [[ ${utc_hour} -eq 16 ]]; then
                 action='stop'
@@ -230,7 +242,7 @@ function action_on_instance() {
     ;;
 
     'london' )
-            if [[ $utc_hour -eq 05 ]]; then
+            if [[ $utc_hour -eq '10#05' ]]; then
               action='start';
             elif [[ $utc_hour -eq 17 ]]; then
               action='stop' ;
@@ -238,7 +250,7 @@ function action_on_instance() {
     ;;
 
     's_carolina' )
-            if [[ ${utc_hour} -eq 01 ]]; then
+            if [[ ${utc_hour} -eq '10#01' ]]; then
               action='start'
             elif [[ ${utc_hour} -eq 13 ]]; then
               action='stop'
@@ -272,7 +284,7 @@ function action_on_instance() {
     'oregon' )
               if [[ ${utc_hour} -eq 13 ]]; then
                 action='start'
-              elif [[ ${utc_hour} -eq 01 ]]; then
+              elif [[ ${utc_hour} -eq '10#01' ]]; then
                 action='stop'
               else
                 action='none'
@@ -282,7 +294,7 @@ function action_on_instance() {
     'sydney' )
               if [[ ${utc_hour} -eq 20 ]]; then
                 action='start'
-              elif [[ ${utc_hour} -eq 08 ]]; then
+              elif [[ ${utc_hour} -eq '10#08' ]]; then
                 action='stop'
               else
                 action='none'
@@ -292,7 +304,7 @@ function action_on_instance() {
     'tokyo' )
               if [[ ${utc_hour} -eq 21 ]]; then
                 action='start'
-              elif [[ ${utc_hour} -eq 09 ]]; then
+              elif [[ ${utc_hour} -eq '10#09' ]]; then
                 action='stop'
               else
                 action='none'
@@ -322,15 +334,15 @@ function instances_start_stop() {
         # echo "Instance: $instance_name"
 
         # get status of instance i
-        status=`awk -v pat="$instance_name " '$0 ~ pat {print $3}' gcp_instances_list_raw.txt`;
+        status=`awk -v pat="$instance_name " '$0 ~ pat {print $3}' environments/gcp_instances_list_raw.txt`;
         # echo "Status: $status"
 
         # get city of instance i
-        city=`awk -v pat="$instance_name " '$0 ~ pat {print $2}' gcp_instances_list.txt`;
+        city=`awk -v pat="$instance_name " '$0 ~ pat {print $2}' environments/gcp_instances_list.txt`;
         # echo "City: $city"
 
         # get zone of instance i
-        zone=`awk -v pat="$instance_name " '$0 ~ pat {print $2}' gcp_instances_list_raw.txt`
+        zone=`awk -v pat="$instance_name " '$0 ~ pat {print $2}' environments/gcp_instances_list_raw.txt`
 
         # action_on_instance function to see if instance should be started or stoppped
         action_on_instance $city
@@ -364,6 +376,7 @@ function instances_start_stop() {
 
 
 # [MAIN start]
+make_directories
 get_current_time
 get_current_instances
 create_instances_array
