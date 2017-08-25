@@ -1,5 +1,5 @@
-INSTANCE vm-rchinta-centos73-test with STATUS TERMINATED in ZONE europe-west3-b will start
-INSTANCE vm-spappala-ubuntu16-bigdata631-mysql56-mapr52-00075268 with STATUS TERMINATED in ZONE europe-west3-b will start
+INSTANCE vm-rchinta-centos73-test with STATUS RUNNING in ZONE europe-west3-b will stay RUNNING
+INSTANCE vm-spappala-ubuntu16-bigdata631-mysql56-mapr52-00075268 with STATUS RUNNING in ZONE europe-west3-b will stay RUNNING
 INSTANCE vm-gcp-scheduler with STATUS RUNNING in ZONE us-central1-f will stay RUNNING
 INSTANCE vm-windowsserver2012-fabric-631 with STATUS TERMINATED in ZONE us-central1-f will stay TERMINATED
 INSTANCE vm-aarnoult-wserver2016-tac-studio-611-mysql5719-00074686 with STATUS RUNNING in ZONE europe-west1-d will stay RUNNING
@@ -11,8 +11,6 @@ INSTANCE vm-abanda-windowsserver2012-mysql57-oracle12c-studio-631 with STATUS RU
 INSTANCE vm-mapr-sandbox-for-hadoop-521 with STATUS RUNNING in ZONE europe-west1-b will stay RUNNING
 INSTANCE vm-spappala-ws2012-mysql57-oracle12c-studio-tac-631-00075268 with STATUS RUNNING in ZONE europe-west1-b will stay RUNNING
 INSTANCE vm-wserver2016-jobserver611-svn517-mysql5719 with STATUS RUNNING in ZONE europe-west1-b will stay RUNNING
-INSTANCE vm-zqin-rhel6-ldap-00075363 with STATUS TERMINATED in ZONE asia-east1-c will stay TERMINATED
 INSTANCE vm-ahsiao-jobserver631-tdbank-00077577 with STATUS RUNNING in ZONE us-west1-a will stay RUNNING
 INSTANCE vm-rarcot-mnh-00078328 with STATUS TERMINATED in ZONE us-east4-a will stay TERMINATED
-INSTANCE vm-rohitpatel-tac611-mysql-johnsonandjohnson-00079168 with STATUS TERMINATED in ZONE us-east4-a will stay TERMINATED
 INSTANCE vm-ssampat-windowsserver2012-dataprep-iam-641-00077714 with STATUS RUNNING in ZONE us-east4-a will stay RUNNING

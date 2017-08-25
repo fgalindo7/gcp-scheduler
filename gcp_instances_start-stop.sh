@@ -192,7 +192,7 @@ function create_instances_array() {
 
 # [START stop_instances]
 function stop_instances() {
-  gcloud compute instances stop "$1" --zone "$2"
+  gcloud compute instances stop "$1" --zone "$2" >> logs/gpc_instances_start-stop_$time_stamp.log
 }
 # [END stop_instances]
 
@@ -200,7 +200,7 @@ function stop_instances() {
 
 # [START start_instances]
 function start_instances() {
-  gcloud compute instances start "$1" --zone "$2"
+  gcloud compute instances start "$1" --zone "$2" >> logs/gpc_instances_start-stop_$time_stamp.log
 }
 # [END start_instances]
 
@@ -340,13 +340,15 @@ function instances_start_stop() {
 
 
         # make sure it's not a weekend before starting or stopping
-        if [ $utc_week_day != 'sat' ] && [ $utc_week_day != 'sun' ] ; then
+        if [ $instance_name != 'vm-aarnoult-wserver2016-tac-studio-611-mysql5719-00074686' ] && [ $instance_name != 'vm-wserver2016-jobserver611-svn517-mysql5719' ] ; then
+		echo "$instance_name"
+	if [ $utc_week_day != 'sat' ] && [ $utc_week_day != 'sun' ] ; then
           if [[ ${status} == 'TERMINATED' && ${action} == 'start' ]] ; then
               echo "INSTANCE $instance_name with STATUS ${status} in ZONE ${zone} will start" >> logs/gpc_instances_start-stop_$time_stamp.log
-              start_instances "$instance_name" "${zone}" >> logs/gpc_instances_start-stop_$time_stamp.log
+              start_instances "$instance_name" "${zone}"
             elif [[ ${status} == 'RUNNING' && ${action} == 'stop' ]]; then
               echo "INSTANCE $instance_name with STATUS ${status} in ZONE ${zone} will stop" >> logs/gpc_instances_start-stop_$time_stamp.log
-              stop_instances "$instance_name" "${zone}" >> logs/gpc_instances_start-stop_$time_stamp.log
+              stop_instances "$instance_name" "${zone}"
             else
               echo "INSTANCE $instance_name with STATUS ${status} in ZONE ${zone} will stay ${status}" >> logs/gpc_instances_start-stop_$time_stamp.log
           fi
@@ -354,7 +356,7 @@ function instances_start_stop() {
           echo "$utc_week_day crontab takes weekdays off."
           echo "Instances will stay as their current state"
         fi
-
+	fi 
       } done
 }
 # [START instances_start_stop]
