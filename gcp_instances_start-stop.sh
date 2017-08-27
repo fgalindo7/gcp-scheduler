@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 # Copyright 2017 Talend Inc. All Rights Reserved.
 #
@@ -352,8 +352,6 @@ function instances_start_stop() {
 
 
         # make sure it's not a weekend before starting or stopping
-        if [ $instance_name != 'vm-aarnoult-wserver2016-tac-studio-611-mysql5719-00074686' ] && [ $instance_name != 'vm-wserver2016-jobserver611-svn517-mysql5719' ] ; then
-		echo "$instance_name"
 	if [ $utc_week_day != 'sat' ] && [ $utc_week_day != 'sun' ] ; then
           if [[ ${status} == 'TERMINATED' && ${action} == 'start' ]] ; then
               echo "INSTANCE $instance_name with STATUS ${status} in ZONE ${zone} will start" >> logs/gpc_instances_start-stop_$time_stamp.log
@@ -365,10 +363,10 @@ function instances_start_stop() {
               echo "INSTANCE $instance_name with STATUS ${status} in ZONE ${zone} will stay ${status}" >> logs/gpc_instances_start-stop_$time_stamp.log
           fi
         else
-          echo "$utc_week_day crontab takes weekdays off."
-          echo "Instances will stay as their current state"
+          echo "It's $utc_week_day, crontab takes weekends off."
+          echo "Instances will keep their current state"
+	  exit 0
         fi
-	fi 
       } done
 }
 # [START instances_start_stop]
