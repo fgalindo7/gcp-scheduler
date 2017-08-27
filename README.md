@@ -4,7 +4,7 @@
 Starts and stops machines depending on their schedule and city.
 Based on tags that are pulled from GCP: <br />
 
-**<UTC-start-time>;<UTC-stop-time>;<active_days>** <br />
+**UTC-start-time;UTC-stop-time;active-days** <br />
 <br />
 The script pulls the current names of environments from GCP under the CSS project. Depending on the time zone, it generates the start and stop **gcloud compute** commands (Monday through Friday).
 
