@@ -4,13 +4,15 @@
 Starts and stops machines depending on their schedule and city.
 Based on tags that are pulled from GCP: <br />
 
-<UTC-start-time>;<UTC-stop-time;<active_days> <br />
+"<UTC-start-time>;<UTC-stop-time;<active_days>" <br />
+<br />
 The script pulls the current names of environments from GCP, depending on the time zone, it generates the start and stop gcloud commands (Monday through Friday).
 
 
 ## Setup
 This script is setup as a cronjob to be run every hour. The environment that we
 are currently using is in AWS (free tier): <br />
+<br />
 10 0-23 * * 1-5 ec2-user /home/ec2-user/talend-gpc-scheduler/gcp_instances_start-stop.sh
 
 
