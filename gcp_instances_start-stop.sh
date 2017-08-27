@@ -355,11 +355,6 @@ function instances_start_stop() {
 
 
         # make sure it's not a weekend before starting or stopping
-<<<<<<< HEAD
-=======
-        if [ $instance_name != 'vm-aarnoult-wserver2016-tac-studio-611-mysql5719-00074686' ] && [ $instance_name != 'vm-wserver2016-jobserver611-svn517-mysql5719' ] ; then
-					#echo "$instance_name"
->>>>>>> 00cd4d98810ed71c9fdd4dc70d56418a995a6f1e
 	if [ $utc_week_day != 'sat' ] && [ $utc_week_day != 'sun' ] ; then
           if [[ ${status} == 'TERMINATED' && ${action} == 'start' ]] ; then
 							echo "==============================" >> logs/gpc_instances_start-stop_$time_stamp.log
@@ -392,10 +387,6 @@ function instances_start_stop() {
           echo "Instances will keep their current state"
 	  exit 0
         fi
-<<<<<<< HEAD
-=======
-	fi
->>>>>>> 00cd4d98810ed71c9fdd4dc70d56418a995a6f1e
       } done
 }
 # [START instances_start_stop]
