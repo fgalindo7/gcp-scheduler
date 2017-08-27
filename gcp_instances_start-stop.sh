@@ -1,5 +1,7 @@
 #!/bin/bash
 
+source ~/.bashrc
+
 # Copyright 2017 Talend Inc. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -80,7 +82,7 @@
 # thu='on'
 # fri='on'
 
-
+# [START make_directories]
 function make_directories() {
 
 if [ ! -d 'environments' ]; then
@@ -91,6 +93,7 @@ if [ ! -d 'logs' ]; then
 	mkdir logs
 fi
 }
+# [STOP make_directories]
 
 
 # [START get_current_time]
@@ -261,10 +264,10 @@ function action_on_instance() {
 
     'iowa' )
               if [[ ${utc_hour} -eq 10 ]]; then
-                # action='start'
+                action='start'
                 action='none'
               elif [[ u${utc_hour} -eq 22 ]]; then
-                # action='stop'
+                action='stop'
                 action='none'
               else
                 action='none'
@@ -352,21 +355,47 @@ function instances_start_stop() {
 
 
         # make sure it's not a weekend before starting or stopping
+<<<<<<< HEAD
+=======
+        if [ $instance_name != 'vm-aarnoult-wserver2016-tac-studio-611-mysql5719-00074686' ] && [ $instance_name != 'vm-wserver2016-jobserver611-svn517-mysql5719' ] ; then
+					#echo "$instance_name"
+>>>>>>> 00cd4d98810ed71c9fdd4dc70d56418a995a6f1e
 	if [ $utc_week_day != 'sat' ] && [ $utc_week_day != 'sun' ] ; then
           if [[ ${status} == 'TERMINATED' && ${action} == 'start' ]] ; then
-              echo "INSTANCE $instance_name with STATUS ${status} in ZONE ${zone} will start" >> logs/gpc_instances_start-stop_$time_stamp.log
-              start_instances "$instance_name" "${zone}"
+							echo "==============================" >> logs/gpc_instances_start-stop_$time_stamp.log
+							echo " Action: START instance" >> logs/gpc_instances_start-stop_$time_stamp.log
+							start_instances "$instance_name" "${zone}"
+							echo " Instance: $instance_name" >> logs/gpc_instances_start-stop_$time_stamp.log
+							echo " Zone: ${zone}" >> logs/gpc_instances_start-stop_$time_stamp.log
+							echo " Status: ${status}" >> logs/gpc_instances_start-stop_$time_stamp.log
+							echo "" >> logs/gpc_instances_start-stop_$time_stamp.log
+
             elif [[ ${status} == 'RUNNING' && ${action} == 'stop' ]]; then
-              echo "INSTANCE $instance_name with STATUS ${status} in ZONE ${zone} will stop" >> logs/gpc_instances_start-stop_$time_stamp.log
+							echo "==============================" >> logs/gpc_instances_start-stop_$time_stamp.log
+							echo " Action: STOP instance" >> logs/gpc_instances_start-stop_$time_stamp.log
               stop_instances "$instance_name" "${zone}"
+							echo " Instance: $instance_name" >> logs/gpc_instances_start-stop_$time_stamp.log
+							echo " Zone: ${zone}" >> logs/gpc_instances_start-stop_$time_stamp.log
+							echo " Status: ${status}" >> logs/gpc_instances_start-stop_$time_stamp.log
+							echo "" >> logs/gpc_instances_start-stop_$time_stamp.log
+
             else
-              echo "INSTANCE $instance_name with STATUS ${status} in ZONE ${zone} will stay ${status}" >> logs/gpc_instances_start-stop_$time_stamp.log
+							echo "==============================" >> logs/gpc_instances_start-stop_$time_stamp.log
+							echo " Action: none" >>
+              echo " Instance: $instance_name" >> logs/gpc_instances_start-stop_$time_stamp.log
+							echo " Zone: ${zone}" >> logs/gpc_instances_start-stop_$time_stamp.log
+							echo " Status: ${status}" >> logs/gpc_instances_start-stop_$time_stamp.log
+							echo "" >> logs/gpc_instances_start-stop_$time_stamp.log
           fi
         else
           echo "It's $utc_week_day, crontab takes weekends off."
           echo "Instances will keep their current state"
 	  exit 0
         fi
+<<<<<<< HEAD
+=======
+	fi
+>>>>>>> 00cd4d98810ed71c9fdd4dc70d56418a995a6f1e
       } done
 }
 # [START instances_start_stop]
