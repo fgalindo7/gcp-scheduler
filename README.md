@@ -22,7 +22,7 @@ The environment that we are currently using is an AWS t2.micro (free tier): <br 
 
 | **Zones** |	**GCP city**  |	**Talend city**	| **on (UTC)** | **off (UTC)** |
 --------------------------|---------------|-------------|---------|----------|
-| asia-southeast1-b	      |	singapore	    |	bangalore	  |	0030	  | 1200     |
+| asia-southeast1-b	      |	singapore	    |	bangalore	  |	0030	  | 1230     |
 | asia-southeast1-a	      |	singapore	    |	bangalore	  |	0030	  |	1230     |
 | europe-west1-d	        |	belgium		    |	suresnes	  |	0400	  |	1600     |
 | europe-west1-c		      |	belgium		    |	suresnes	  |	0400	  |	1600     |
@@ -35,14 +35,14 @@ The environment that we are currently using is an AWS t2.micro (free tier): <br 
 | europe-west2-b	       	|	london		    |	london		  |	0500	  |	1700     |
 | us-east1-d		          |	s_carolina	  |	atlanta	    |	1000	  |	2200     |
 | us-east1-c		          |	s_carolina	  |	atlanta	    |	1000	  |	2200     |
-| us-east1-b 	   	        |	s_carolina	  |	atlanta	    |	1000	  |	2200     |		
+| us-east1-b 	   	        |	s_carolina	  |	atlanta	    |	1000	  |	2200     |
+| us-east4-b		          |	n_virginia	  |	atlanta	    |	1000	  |	2200     |
+| us-east4-a		          |	n_virginia	  |	atlanta	    |	1000	  |	2200 	   |
+| us-east4-c		          |	n_virginia	  |	atlanta	    |	1000	  |	2200  	 |		
 | us-central1-c		        |	iowa          |	           	|	1100	  |	2300     |
 | us-central1-a		        |	iowa		      |			        |	1100	  |	2300     |
 | us-central1-f		        |	iowa		      |			        |	1100	  |	2300     |
 | us-central1-b		        |	iowa		      |		          |	1100	  |	2300  	 |
-| us-east4-b		          |	n_virginia	  |			        |	1100	  |	2300     |
-| us-east4-a		          |	n_virginia	  |	     		    |	1100	  |	2300 	   |
-| us-east4-c		          |	n_virginia	  |			        |	1100	  |	2300  	 |
 | us-west1-b		          |	oregon		    |	irvine		  |	1300	  |	0100  	 |
 | us-west1-a		          | oregon		    |	irvine		  |	1300	  |	0100     |
 | us-west1-c		          | oregon		    |	irvine		  |	1300	  |	0100     |

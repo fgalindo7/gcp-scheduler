@@ -185,9 +185,9 @@ function action_on_instance() {
   local gcp_city=$1
   case $gcp_city in
     'singapore' )
-            if [[ ${utc_hour} -eq '10#00' ]]; then
+            if [[ 10#${utc_hour} -eq '10#00' ]]; then
               action='start'
-            elif [[ ${utc_hour} -eq 13 ]]; then
+            elif [[ 10#${utc_hour} -eq '10#13' ]]; then
               action='stop'
             else
               action='none'
@@ -195,9 +195,9 @@ function action_on_instance() {
     ;;
 
     'belgium'|'frankfurt')
-              if [[ ${utc_hour} -eq '10#04' ]]; then
+              if [[ 10#${utc_hour} -eq '10#04' ]]; then
                 action='start'
-              elif [[ ${utc_hour} -eq 16 ]]; then
+              elif [[ 10#${utc_hour} -eq '10#16' ]]; then
                 action='stop'
               else
                 action='none'
@@ -205,49 +205,49 @@ function action_on_instance() {
     ;;
 
     'london' )
-            if [[ $utc_hour -eq '10#05' ]]; then
+            if [[ 10#${utc_hour} -eq '10#05' ]]; then
               action='start';
-            elif [[ $utc_hour -eq 17 ]]; then
+            elif [[ 10#${utc_hour} -eq '10#17' ]]; then
               action='stop' ;
             else action='none' ; fi
     ;;
 
     's_carolina' )
-            if [[ ${utc_hour} -eq '10#01' ]]; then
+            if [[ 10#${utc_hour} -eq '10#10' ]]; then
               action='start'
-            elif [[ ${utc_hour} -eq 13 ]]; then
+            elif [[ 10#${utc_hour} -eq '10#22' ]]; then
               action='stop'
             else
               action='none'
             fi
     ;;
 
-    'iowa' )
-              if [[ ${utc_hour} -eq 10 ]]; then
-                action='start'
-                action='none'
-              elif [[ u${utc_hour} -eq 22 ]]; then
-                action='stop'
-                action='none'
-              else
-                action='none'
-              fi
-    ;;
+		'n_virginia' )
+							if [[ 10#${utc_hour} -eq '10#10' ]]; then
+								action='start'
+							elif [[ 10#${utc_hour} -eq '10#22' ]]; then
+								action='stop'
+							else
+								action='none'
+							fi
+		;;
 
-    'n_virginia' )
-              if [[ ${utc_hour} -eq 11 ]]; then
+    'iowa' )
+              if [[ 10#${utc_hour} -eq '10#11' ]]; then
                 action='start'
-              elif [[ ${utc_hour} -eq 23 ]]; then
+                action='none'
+              elif [[ 10#${utc_hour} -eq '10#23' ]]; then
                 action='stop'
+                action='none'
               else
                 action='none'
               fi
     ;;
 
     'oregon' )
-              if [[ ${utc_hour} -eq 13 ]]; then
+              if [[ 10#${utc_hour} -eq '10#13' ]]; then
                 action='start'
-              elif [[ ${utc_hour} -eq '10#01' ]]; then
+              elif [[ 10#${utc_hour} -eq '10#01' ]]; then
                 action='stop'
               else
                 action='none'
@@ -255,9 +255,9 @@ function action_on_instance() {
     ;;
 
     'sydney' )
-              if [[ ${utc_hour} -eq 20 ]]; then
+              if [[ 10#${utc_hour} -eq '10#20' ]]; then
                 action='start'
-              elif [[ ${utc_hour} -eq '10#08' ]]; then
+              elif [[ 10#${utc_hour} -eq '10#08' ]]; then
                 action='stop'
               else
                 action='none'
@@ -265,9 +265,9 @@ function action_on_instance() {
     ;;
 
     'tokyo' )
-              if [[ ${utc_hour} -eq 21 ]]; then
+              if [[ 10#${utc_hour} -eq '10#21' ]]; then
                 action='start'
-              elif [[ ${utc_hour} -eq '10#09' ]]; then
+              elif [[ 10#${utc_hour} -eq '10#09' ]]; then
                 action='stop'
               else
                 action='none'
@@ -275,9 +275,9 @@ function action_on_instance() {
     ;;
 
     'taiwan' )
-              if [[ ${utc_hour} -eq 22 ]]; then
+              if [[ 10#${utc_hour} -eq '10#22' ]]; then
                 action='start'
-              elif [[ ${utc_hour} -eq 10 ]]; then
+              elif [[ 10#${utc_hour} -eq '10#10' ]]; then
                 action='stop'
               else
                 action='none'
