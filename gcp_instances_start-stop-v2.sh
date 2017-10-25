@@ -29,16 +29,11 @@ source ~/.bashrc
 #
 
 ## Global variables
-#
-# start_time=06
-# stop_time=18
-# weekends='off'
-# weekdays='on'
-# mon='on'
-# tue='on'
-# wed='on'
-# thu='on'
-# fri='on'
+project='scheduler-test-181019'
+scheduler_label='scheduler'
+archive_label='archive-date'
+# export start_time=0600
+# export stop_time=1800
 
 # [START make_directories]
 function make_directories() {
@@ -104,6 +99,55 @@ function get_current_instances() {
 # [END get_current_instances]
 
 
+# [START get_scheduler_label]
+function get_scheduler_label() {
+		local vm_name=$1
+		local zone=$2
+		local label_length=${#scheduler_label}
+
+    scheduler_label_key_raw=$(gcloud compute instances describe $vm_name --zone $zone --project $project | grep "$scheduler_label: ")
+
+		if [[ -z $scheduler_label_key_raw ]]; then
+			scheduler_label="empty"
+		else
+			# scheduler_label_key_raw=$(gcloud compute instances describe vm-fgalindo-centos7-test-1 --zone us-central1-c --project scheduler-test-181019 | grep "$scheduler_label: ")
+			scheduler_label_key="$(echo -e "${scheduler_label_key_raw}" | tr -d '[:space:]')" # remove white spaces
+			scheduler_key=${scheduler_label_key:$((label_length+1))} # remove label, keep the key
+		fi
+
+		${scheduler_key[@]}
+    echo "> [$1]"
+		echo "> [$2]"
+		echo "> [$3]"
+		echo "> [$4]"
+    done
+
+
+}
+# [END get_scheduler_label]
+
+
+
+# [START get_archive_label]
+function get_archive_label() {
+		local vm_name=$1
+		local zone=$2
+		local label_length=${#archive_label}
+
+    archive_label_key_raw=$(gcloud compute instances describe $vm_name --zone $zone --project $project | grep "$archive_label: ")
+
+		if [[ -z $archive_label_key_raw ]]; then
+			archive_label="empty"
+		else
+			# scheduler_label_key_raw=$(gcloud compute instances describe vm-fgalindo-centos7-test-1 --zone us-central1-c --project scheduler-test-181019 | grep "$scheduler_label: ")
+			scheduler_label_key="$(echo -e "${scheduler_label_key_raw}" | tr -d '[:space:]')" # remove white spaces
+			scheduler_key=${scheduler_label_key:$((label_length+1))} # remove label itself to just keep the key
+		fi
+}
+# [END get_archive_label]
+
+
+
 # [START replace_zone_with_city]
 function replace_zone_with_city() {
     if [[ -f environments/gcp_instances_list.txt ]] ; then
@@ -165,7 +209,7 @@ function create_instances_array() {
 
 # [START stop_instances]
 function stop_instances() {
-  gcloud compute instances stop "$1" --zone "$2" >> logs/gpc_instances_start-stop_$time_stamp.log
+  gcloud compute instances stop "$1" --zone "$2" --project $project >> logs/gpc_instances_start-stop_$time_stamp.log
 }
 # [END stop_instances]
 
@@ -173,9 +217,16 @@ function stop_instances() {
 
 # [START start_instances]
 function start_instances() {
-  #gcloud compute instances start "$1" --zone "$2" >> logs/gpc_instances_start-stop_$time_stamp.log
+  gcloud compute instances start "$1" --zone "$2" --project $project >> logs/gpc_instances_start-stop_$time_stamp.log
 }
 # [END start_instances]
+
+
+# [START delete_instances]
+function delete_instances() {
+  gcloud compute instances delete "$1" --zone "$2" --project $project >> logs/gpc_instances_delete_$time_stamp.log
+}
+# [END delete_instances]
 
 
 # [START action_on_instance]
@@ -311,8 +362,8 @@ function instances_start_stop() {
         # echo ""
 
 
-        # make sure it's not a weekend before starting or stopping and it's not a repository
-	if [ $utc_week_day != 'sat' ] && [ $utc_week_day != 'sun' ] && [ $instance_name != *"support-docker-registry" ]; then
+        # make sure it's not a weekend before starting or stopping
+	if [ $utc_week_day != 'sat' ] && [ $utc_week_day != 'sun' ] ; then
           if [[ ${status} == 'TERMINATED' && ${action} == 'start' ]] ; then
 							echo "==============================" >> logs/gpc_instances_start-stop_$time_stamp.log
 							echo " Action: START instance" >> logs/gpc_instances_start-stop_$time_stamp.log
