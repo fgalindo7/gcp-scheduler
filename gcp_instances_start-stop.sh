@@ -174,6 +174,7 @@ function stop_instances() {
 # [START start_instances]
 function start_instances() {
   #gcloud compute instances start "$1" --zone "$2" >> logs/gpc_instances_start-stop_$time_stamp.log
+	echo ""
 }
 # [END start_instances]
 
