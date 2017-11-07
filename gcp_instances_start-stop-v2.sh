@@ -210,59 +210,89 @@ function get_instance_zone() {
 
 
 
-# [START get_instance_city]
-function get_instance_city() {
+# [START get_instance_region]
+function get_instance_region() {
   local instance_name=$1
   local instance_zone=$(get_instance_zone "$instance_name")
 
   case "$instance_zone" in
     "asia-east1"* )
     local instance_city="taiwan"
+    # CST - China Standard Time, UTC/GMT +8 hours
     echo "$instance_city"
       ;;
     "asia-northeast1"* )
     local instance_city="tokyo"
+    # JST - Japan Standard Time, UTC/GMT +9 hours
+    echo "$instance_city"
+      ;;
+    "asia-south1"* )
+    local instance_city="mumbai"
+    # IST - India Standard Time, UTC/GMT +5:30 hours
     echo "$instance_city"
       ;;
     "asia-southeast1"* )
     local instance_city="singapore"
+    # SGT - Singapore Time, UTC/GMT +8 hours
     echo "$instance_city"
       ;;
     "australia-southeast1"* )
     local instance_city="sydney"
+    # AEDT - Australian Eastern Daylight Time, UTC/GMT +11 hours (between Oct 1 and Apr 2)
+    # AEST - Australian Eastern Standard Time, UTC/GMT +10 hours (between Apr 2 and Oct 1)
     echo "$instance_city"
       ;;
     "europe-west1"* )
     local instance_city="belgium"
+    # CET - Central European Time, UTC/GMT +1 hour (between Oct 29 and Mar 26)
+    # CEST - Central European Summer Time, UTC/GMT +2 hours (between Mar 26 and Oct 29)
     echo "$instance_city"
       ;;
     "europe-west2"* )
     local instance_city="london"
+    # GMT - Greenwich Mean Time, UTC/GMT no offset (between Oct 29 and Mar 26)
+    # BSM - British Summer Time, UTC/GMT +1 hour (between Mar 26 and Oct 29)
     echo "$instance_city"
       ;;
     "europe-west3"* )
     local instance_city="frankfurt"
+    # CET - Central European Time, UTC/GMT +1 hour (between Oct 29 and Mar 26)
+    # CEST - Central European Summer Time, UTC/GMT +2 hours (between Mar 26 and Oct 29)
+    echo "$instance_city"
+      ;;
+    "southamerica-east1"* )
+    local instance_city="sao_paulo"
+    # BRT- Brasilia Time, UTC/GMT -3 hours (from Feb 18 to Oct 14)
+    # BRST - Brasilia Summer Time, UTC/GMT -2 hours (Oct 14 to Feb 18)
     echo "$instance_city"
       ;;
     "us-central1"* )
     local instance_city="iowa"
+    # CST - Central Standard Time, UTC/GMT -6 hours (from Nov 5 to Mar 12)
+    # CDT - Central Daylight Time, UTC/GMT -5 hours (from Mar 12 to Nov 5)
     echo "$instance_city"
       ;;
     "us-east1"* )
     local instance_city="s_carolina"
+    # EST - Eastern Standard Time, UTC/GMT -5 hours (from Nov 5 to Mar 12)
+    # EDT	- Eastern Daylight Time, UTC/GMT -4 hours (from Mar 12 to Nov 5)
     echo "$instance_city"
       ;;
     "us-east4"* )
     local instance_city="n_virginia"
+    # EST - Eastern Standard Time, UTC/GMT -5 hours (from Nov 5 to Mar 12)
+    # EDT	- Eastern Daylight Time, UTC/GMT -4 hours (from Mar 12 to Nov 5)
     echo "$instance_city"
       ;;
     "us-west1"* )
     local instance_city="oregon"
+    # PST - Pacific Standard Time, UTC/GMT -8 hours (from Nov 5 to Mar 12)
+    # PDT- Pacific Daylight Time, UTC/GMT -7 hours (from Mar 12 to Nov 5)
     echo "$instance_city"
       ;;
   esac
 }
-# [END get_instance_city]
+# [END get_instance_region]
 
 
 
@@ -437,16 +467,24 @@ function instances_control() {
     # echo "Zone: $zone"
 
     # get city of instance
-    local city=$(get_instance_city "$instance_name")
+    local region=$(get_instance_region "$instance_name")
     # echo "City: $city"
 
     # get scheduler label of instance
     local scheduler_array=$(get_scheduler_label "$instance_name" "$zone" "$project")
     # echo "Scheduler: ${scheduler_array[@]}"
 
+    local start_time="${scheduler_array[0]}"
+    local stop_time="${scheduler_array[1]}"
+    local time-zone="${scheduler_array[2]}"
+    local days="${scheduler_array[3]}"
+
+
     # get archive-date of instance
     local archive_array=$(get_archive_label "$instance_name" "$zone" "$project")
     # echo "Archive-date: ${archive_array[@]}"
+
+
 
     # action_on_instance function to see if instance should be started or stoppped
     action_on_instance "$city" "$time_zone"
