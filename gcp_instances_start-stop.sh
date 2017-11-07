@@ -313,7 +313,7 @@ function instances_start_stop() {
 
 
         # make sure it's not a weekend before starting or stopping and it's not a repository
-	if [ $utc_week_day != 'sat' ] && [ $utc_week_day != 'sun' ] && [ $instance_name != *"support-docker-registry" ] && [ $instance_name != "vm-ctan-ps-onboarding-"* ]; then
+	if [[ $utc_week_day != 'sat' && $utc_week_day != 'sun' && $instance_name != *"support-docker-registry" && $instance_name != "vm-ctan-ps-onboarding-"* ]]; then
           if [[ ${status} == 'TERMINATED' && ${action} == 'start' ]] ; then
 							echo "==============================" >> logs/gpc_instances_start-stop_$time_stamp.log
 							echo " Action: START instance" >> logs/gpc_instances_start-stop_$time_stamp.log
