@@ -109,7 +109,7 @@ function get_current_time() {
 function remove_exceptions() {
   # delete exceptions using sed
   # for exception in ${exceptions[@]}; do echo ${exception}; sed -i -e "/${exception}/d" environments/gcp_instances_list.txt; done
-  for exception in "${exceptions[@]}";
+  for exception in "${exceptions[@]}"; do
     sed -i -e "/${exception}/d" environments/gcp_instances_list.txt;
   done
 }
@@ -471,23 +471,25 @@ function instances_control() {
     # echo "City: $city"
 
     # get scheduler label of instance
-    local scheduler_array=$(get_scheduler_label "$instance_name" "$zone" "$project")
+    local scheduler_array=($(get_scheduler_label "$instance_name" "$zone" "$project"))
     # echo "Scheduler: ${scheduler_array[@]}"
-
-    local start_time="${scheduler_array[0]}"
-    local stop_time="${scheduler_array[1]}"
-    local time-zone="${scheduler_array[2]}"
-    local days="${scheduler_array[3]}"
+    start_time="${scheduler_array[0]}"
+    # echo "start time: $start_time"
+    stop_time="${scheduler_array[1]}"
+    # echo "stop time: $stop_time"
+    time_zone="${scheduler_array[2]}"
+    # echo "time zone: $time_zone"
+    days="${scheduler_array[3]}"
+    # echo "days: $days"
 
 
     # get archive-date of instance
-    local archive_array=$(get_archive_label "$instance_name" "$zone" "$project")
+    local archive_array=($(get_archive_label "$instance_name" "$zone" "$project"))
     # echo "Archive-date: ${archive_array[@]}"
 
 
-
     # action_on_instance function to see if instance should be started or stoppped
-    action_on_instance "$city" "$time_zone"
+    action_on_instance "$time_zone"
     # echo "Action: $action"
     # echo ""
 
