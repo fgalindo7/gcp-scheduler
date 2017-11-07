@@ -31,10 +31,12 @@ source ~/.bashrc
 ## Global variables
 projects=('css-us' 'css-apac' 'css-emea' 'probable-sector-147517')
 scheduler_label='scheduler'
-archive_label='archive-date'
+archive_date_label='archive-date'
 exceptions=('devops' 'fgalindo' 'support-docker-registry')
-default_start_time=none
-default_stop_time=1800
+default_start_time='none'
+default_stop_time='1800'
+default_time_zone='est'
+time_zones=('CST' 'JST' 'IST' 'SGT' 'AEDT' 'AEST' 'CET' 'CEST' 'GMT' 'BSM' 'BRT' 'BRST' 'CST' 'CDT' 'EST' 'EDT' 'PST' 'PDT')
 
 
 
@@ -119,12 +121,13 @@ function remove_exceptions() {
 
 # [START create_instances_array]
 function create_instances_array() {
+  local instances_array
   while IFS=' ' read -r line || [[ -n ${line} ]] ; do
-    instances_arr+=($(echo ${line} | awk '{print $1;}'))
+    instances_array+=($(echo ${line} | awk '{print $1;}'))
   done < "environments/gcp_instances_list.txt"
+  echo "${instances_array[@]}"
 }
 # [STOP create_instances_array]
-
 
 
 # [START get_current_instances]
@@ -134,7 +137,8 @@ function get_current_instances() {
   gcloud compute instances list --project $project | awk 'NR>1{print $1, $2, $NF}' > environments/gcp_instances_list.txt
   # call function to remove all instances that are exceptions to the scheduler
   remove_exceptions
-	create_instances_array
+	instances_array=($(create_instances_array))
+  echo "${instances_array[@]}"
 }
 # [STOP get_current_instances]
 
@@ -159,35 +163,83 @@ function get_scheduler_label() {
   # parse scheduler key
   local scheduler_key_array
   IFS='-' read -r -a scheduler_key_array <<< "$scheduler_key"
-  echo "${scheduler_key_array[*]}"
+
+  # Call check_scheduler_key to confirm a valid label key
+  is_scheduler_key_ok=$(check_scheduler_key "${scheduler_key_array[@]}")
+
+  if [[ is_scheduler_key_valid == true ]]; then
+    echo "${scheduler_key_array[@]}"
+  else
+    echo "none"
+  fi
 }
 # [END get_scheduler_label]
 
 
+# [START check_scheduler_label]
+function check_scheduler_key(){
+  local scheduler_key=$1
+  local scheduler_key_length=${#scheduler_key[@]}
 
-# [START get_archive_label]
-function get_archive_label() {
+  # check1: length of array is 4
+  if [[ "$scheduler_key_length" == 4 ]]; then
+    local check1=true
+    local val1="${scheduler_key[0]}"
+    local val2="${scheduler_key[1]}"
+    local val3="${scheduler_key[2]}"
+    local val4="${scheduler_key[3]}"
+  fi
+  # check2: first and second strings are number between 0-23 or 'default' or 'none'
+  if [[ "$val1" == 'default'  || "$val1" == 'none' || ]]; then
+    #statements
+  fi
+
+
+  # check4: valid time_zone
+
+
+  # check5: valid day selection
+
+  if [[ "$check1" == true && "$check2" == true && "$check3" == true && "$check4" == true ]]; then
+     # 0 = true
+     return 0
+  else
+    # 1 = false
+    return 1
+  fi
+}
+# [STOP check_scheduler_label]
+
+
+# [START get_archive_date_label]
+function get_archive_date_label() {
   local instance_name=$1
   local instance_zone=$2
 	local instance_project=$3
 
-  local archive_label_key_raw=$(gcloud compute instances describe "$instance_name" --zone "$instance_zone" --project "$instance_project" | grep "$archive_label: ")
-  # export archive_label_key_raw=$(gcloud compute instances describe "$instance_name" --zone "$instance_zone" --project "$instance_project" | grep "$archive_label: "); echo $archive_label_key_raw
-  if [[ -z $archive_label_key_raw ]]; then
-    local archive_key='none'
+  local archive_date_label_key_raw=$(gcloud compute instances describe "$instance_name" --zone "$instance_zone" --project "$instance_project" | grep "$archive_date_label: ")
+  # export archive_date_label_key_raw=$(gcloud compute instances describe "$instance_name" --zone "$instance_zone" --project "$instance_project" | grep "$archive_date_label: "); echo $archive_date_label_key_raw
+  if [[ -z $archive_date_label_key_raw ]]; then
+    local archive_date_key='none'
   else
-    local archive_label_key=$(echo "${archive_label_key_raw}" | tr -d '[:space:]') # remove white spaces
-    # export archive_label_key=$(echo "${archive_label_key_raw}" | tr -d '[:space:]'); echo $archive_label_key
-    local archive_key=$(echo "${archive_label_key}" | sed -e "s/${archive_label}://") # remove archive label and column, "archive:"
-    # export archive_key=$(echo "${archive_label_key}" | sed -e "s/${archive_label}://"); echo $archive_key
+    local archive_date_label_key=$(echo "${archive_date_label_key_raw}" | tr -d '[:space:]') # remove white spaces
+    # export archive_date_label_key=$(echo "${archive_date_label_key_raw}" | tr -d '[:space:]'); echo $archive_date_label_key
+    local archive_date_key=$(echo "${archive_date_label_key}" | sed -e "s/${archive_date_label}://") # remove archive label and column, "archive:"
+    # export archive_date_key=$(echo "${archive_date_label_key}" | sed -e "s/${archive_date_label}://"); echo $archive_date_key
   fi
   # parse archive key
-  local archive_key_array
-  IFS='-' read -r -a archive_key_array <<< "$archive_key"
-  echo "${archive_key_array[*]}"
+  local archive_date_key_array
+  IFS='-' read -r -a archive_date_key_array <<< "$archive_date_key"
+  echo "${archive_date_key_array[@]}"
 }
-# [END get_archive_label]
+# [END get_archive_date_label]
 
+
+# [START check_archive_date_label]
+function check_archive_date_key(){
+ # TODO
+}
+# [STOP check_archive_date_label]
 
 
 # [START get_instance_status]
@@ -453,8 +505,10 @@ function action_on_instance() {
 # [START instances_control]
 function instances_control() {
 	local project=$1
+  instances_array=($(get_current_instances $project))
   # loop through instances to start or stop
-  for instance in "${instances_arr[@]}"; do {
+
+  for instance in "${instances_array[@]}"; do {
     local instance_name="$instance"
     # echo "Instance: $instance_name"
 
@@ -484,7 +538,7 @@ function instances_control() {
 
 
     # get archive-date of instance
-    local archive_array=($(get_archive_label "$instance_name" "$zone" "$project"))
+    local archive_array=($(get_archive_date_label "$instance_name" "$zone" "$project"))
     # echo "Archive-date: ${archive_array[@]}"
 
 
