@@ -29,31 +29,47 @@ source ~/.bashrc
 #
 
 ## Global variables
-project='scheduler-test-181019'
-scheduler_label='scheduler'
-archive_label='archive-date'
+export projects=('css-us' 'css-apac' 'css-emea' 'probable-sector-147517')
+#export projects=('scheduler-test-181019')
+export scheduler_label='scheduler'
+export archive_label='archive-date'
+export exceptions=('devops' 'fgalindo' 'support-docker-registry')
 # export start_time=0600
 # export stop_time=1800
+
+
+# [MAIN start]
+function main() {
+  make_directories
+  get_current_time
+  get_current_instances
+  create_instances_array
+  replace_zone_with_city
+  instances_start_stop
+}
+# [END]
+
+
 
 # [START make_directories]
 function make_directories() {
 
 if [ ! -d 'environments' ]; then
-	mkdir environments
+  mkdir environments
 fi
 
 if [ ! -d 'logs' ]; then
-	mkdir logs
+  mkdir logs
 fi
 }
 # [STOP make_directories]
 
 
+
 # [START get_current_time]
 function get_current_time() {
     # date +"[option]"
-
-    # [option]	result
+    # [option]  result
     # %T     time; same as %H:%M:%S
     # %H     hour (00..23)
     # %w     day of week (0..6); 0 is Sunday
@@ -91,38 +107,48 @@ function get_current_time() {
 
 
 
+# [START remove_exceptions]
+function remove_exceptions() {
+  # delete exceptions using sed
+  # for exception in ${exceptions[@]}; do echo ${exception}; sed -i -e "/${exception}/d" environments/gcp_instances_list.txt; done
+  for exception in "${exceptions[@]}";
+    sed -i -e "/${exception}/d" environments/gcp_instances_list.txt;
+  done
+}
+# [END remove_exceptions]
+
+
+
 # [START get_current_instances]
 function get_current_instances() {
-    # list of NAME ZONE STATUS without header sorted by zone
-    gcloud compute instances list | awk 'NR>1{print $1, $2, $NF}' > environments/gcp_instances_list.txt
+  # list of NAME ZONE STATUS without header sorted by zone
+  gcloud compute instances list --project $project | awk 'NR>1{print $1, $2, $NF}' > environments/gcp_instances_list.txt
+  # call function to remove all instances that are exceptions to the scheduler
+  remove_exceptions
 }
 # [END get_current_instances]
 
 
+
 # [START get_scheduler_label]
 function get_scheduler_label() {
-		local vm_name=$1
-		local zone=$2
-		local label_length=${#scheduler_label}
+  local vm_name=$1
+  local zone=$2
 
-    scheduler_label_key_raw=$(gcloud compute instances describe $vm_name --zone $zone --project $project | grep "$scheduler_label: ")
-
-		if [[ -z $scheduler_label_key_raw ]]; then
-			scheduler_label="empty"
-		else
-			# scheduler_label_key_raw=$(gcloud compute instances describe vm-fgalindo-centos7-test-1 --zone us-central1-c --project scheduler-test-181019 | grep "$scheduler_label: ")
-			scheduler_label_key="$(echo -e "${scheduler_label_key_raw}" | tr -d '[:space:]')" # remove white spaces
-			scheduler_key=${scheduler_label_key:$((label_length+1))} # remove label, keep the key
-		fi
-
-		${scheduler_key[@]}
-    echo "> [$1]"
-		echo "> [$2]"
-		echo "> [$3]"
-		echo "> [$4]"
-    done
-
-
+  local scheduler_label_key_raw=$(gcloud compute instances describe $vm_name --zone $zone --project $project | grep "$scheduler_label: ")
+  # export scheduler_label_key_raw=$(gcloud compute instances describe $vm_name --zone $zone --project $project | grep "$scheduler_label: "); echo $scheduler_label_key_raw
+  if [[ -z $scheduler_label_key_raw ]]; then
+    local scheduler_key='none'
+  else
+    local scheduler_label_key=$(echo "${scheduler_label_key_raw}" | tr -d '[:space:]') # remove white spaces
+    # export scheduler_label_key=$(echo "${scheduler_label_key_raw}" | tr -d '[:space:]'); echo $scheduler_label_key
+    local scheduler_key=$(echo "${scheduler_label_key}" | sed -e "s/${scheduler_label}://") # remove scheduler label and column, "scheduler:"
+    # export scheduler_key=$(echo "${scheduler_label_key}" | sed -e "s/${scheduler_label}://"); echo $scheduler_key
+  fi
+  # parse scheduler key
+  local scheduler_key_array
+  IFS='-' read -r -a scheduler_key_array <<< "$scheduler_key"
+  echo "${scheduler_key_array[*]}"
 }
 # [END get_scheduler_label]
 
@@ -130,70 +156,101 @@ function get_scheduler_label() {
 
 # [START get_archive_label]
 function get_archive_label() {
-		local vm_name=$1
-		local zone=$2
-		local label_length=${#archive_label}
+  local vm_name=$1
+  local zone=$2
 
-    archive_label_key_raw=$(gcloud compute instances describe $vm_name --zone $zone --project $project | grep "$archive_label: ")
-
-		if [[ -z $archive_label_key_raw ]]; then
-			archive_label="empty"
-		else
-			# scheduler_label_key_raw=$(gcloud compute instances describe vm-fgalindo-centos7-test-1 --zone us-central1-c --project scheduler-test-181019 | grep "$scheduler_label: ")
-			scheduler_label_key="$(echo -e "${scheduler_label_key_raw}" | tr -d '[:space:]')" # remove white spaces
-			scheduler_key=${scheduler_label_key:$((label_length+1))} # remove label itself to just keep the key
-		fi
+  local archive_label_key_raw=$(gcloud compute instances describe $vm_name --zone $zone --project $project | grep "$archive_label: ")
+  # export archive_label_key_raw=$(gcloud compute instances describe $vm_name --zone $zone --project $project | grep "$archive_label: "); echo $archive_label_key_raw
+  if [[ -z $archive_label_key_raw ]]; then
+    local archive_key='none'
+  else
+    local archive_label_key=$(echo "${archive_label_key_raw}" | tr -d '[:space:]') # remove white spaces
+    # export archive_label_key=$(echo "${archive_label_key_raw}" | tr -d '[:space:]'); echo $archive_label_key
+    local archive_key=$(echo "${archive_label_key}" | sed -e "s/${archive_label}://") # remove archive label and column, "archive:"
+    # export archive_key=$(echo "${archive_label_key}" | sed -e "s/${archive_label}://"); echo $archive_key
+  fi
+  # parse archive key
+  local archive_key_array
+  IFS='-' read -r -a archive_key_array <<< "$archive_key"
+  echo "${archive_key_array[*]}"
 }
 # [END get_archive_label]
 
 
 
-# [START replace_zone_with_city]
-function replace_zone_with_city() {
-    if [[ -f environments/gcp_instances_list.txt ]] ; then
-        # make copy to keep zones
-        cp environments/gcp_instances_list.txt environments/gcp_instances_list_raw.txt
-
-        # replace zones with cities
-        sed -i -e 's/asia-east1-a/taiwan/g' environments/gcp_instances_list.txt
-        sed -i -e 's/asia-east1-c/taiwan/g' environments/gcp_instances_list.txt
-        sed -i -e 's/asia-east1-b/taiwan/g' environments/gcp_instances_list.txt
-        sed -i -e 's/asia-northeast1-c/tokyo/g' environments/gcp_instances_list.txt
-        sed -i -e 's/asia-northeast1-a/tokyo/g' environments/gcp_instances_list.txt
-        sed -i -e 's/asia-northeast1-b/tokyo/g' environments/gcp_instances_list.txt
-        sed -i -e 's/asia-southeast1-b/singapore/g' environments/gcp_instances_list.txt
-        sed -i -e 's/asia-southeast1-a/singapore/g' environments/gcp_instances_list.txt
-        sed -i -e 's/australia-southeast1-a/sydney/g' environments/gcp_instances_list.txt
-        sed -i -e 's/australia-southeast1-c/sydney/g' environments/gcp_instances_list.txt
-        sed -i -e 's/australia-southeast1-b/sydney/g' environments/gcp_instances_list.txt
-        sed -i -e 's/europe-west1-d/belgium/g' environments/gcp_instances_list.txt
-        sed -i -e 's/europe-west1-c/belgium/g' environments/gcp_instances_list.txt
-        sed -i -e 's/europe-west1-b/belgium/g' environments/gcp_instances_list.txt
-        sed -i -e 's/europe-west2-c/london/g' environments/gcp_instances_list.txt
-        sed -i -e 's/europe-west2-a/london/g' environments/gcp_instances_list.txt
-        sed -i -e 's/europe-west2-b/london/g' environments/gcp_instances_list.txt
-        sed -i -e 's/europe-west3-b/frankfurt/g' environments/gcp_instances_list.txt
-        sed -i -e 's/europe-west3-c/frankfurt/g' environments/gcp_instances_list.txt
-        sed -i -e 's/europe-west3-a/frankfurt/g' environments/gcp_instances_list.txt
-        sed -i -e 's/us-central1-c/iowa/g' environments/gcp_instances_list.txt
-        sed -i -e 's/us-central1-a/iowa/g' environments/gcp_instances_list.txt
-        sed -i -e 's/us-central1-f/iowa/g' environments/gcp_instances_list.txt
-        sed -i -e 's/us-central1-b/iowa/g' environments/gcp_instances_list.txt
-        sed -i -e 's/us-east1-d/s_carolina/g' environments/gcp_instances_list.txt
-        sed -i -e 's/us-east1-c/s_carolina/g' environments/gcp_instances_list.txt
-        sed -i -e 's/us-east1-b/s_carolina/g' environments/gcp_instances_list.txt
-        sed -i -e 's/us-east4-b/n_virginia/g' environments/gcp_instances_list.txt
-        sed -i -e 's/us-east4-a/n_virginia/g' environments/gcp_instances_list.txt
-        sed -i -e 's/us-east4-c/n_virginia/g' environments/gcp_instances_list.txt
-        sed -i -e 's/us-west1-b/oregon/g' environments/gcp_instances_list.txt
-        sed -i -e 's/us-west1-a/oregon/g' environments/gcp_instances_list.txt
-        sed -i -e 's/us-west1-c/oregon/g' environments/gcp_instances_list.txt
-      else
-        echo "environments/gcp_instances_list.txt not found"
-        exit 0
-    fi
+# [START get_instance_status]
+function get_instance_status() {
+  local instance_name=$1
+  local instance_status=$(awk -v pat="$instance_name " '$0 ~ pat {print $3}' environments/gcp_instances_list.txt)
+  echo "$instance_status"
 }
-# [END replace_zone_with_city]
+# [END get_instance_status]
+
+
+
+# [START get_instance_zone]
+function get_instance_zone() {
+  local instance_name=$1
+  local instance_zone=$(awk -v pat="$instance_name " '$0 ~ pat {print $2}' environments/gcp_instances_list.txt)
+  echo "$instance_zone"
+}
+# [END get_instance_zone]
+
+
+
+# [START get_instance_city]
+function get_instance_city() {
+  local instance_name=$1
+  local zone=$(get_instance_zone "$instance_name")
+
+  case $zone in
+    "asia-east1"* )
+    local instance_city="taiwan"
+    echo "$instance_city"
+      ;;
+    "asia-northeast1"* )
+    local instance_city="tokyo"
+    echo "$instance_city"
+      ;;
+    "asia-southeast1"* )
+    local instance_city="singapore"
+    echo "$instance_city"
+      ;;
+    "australia-southeast1"* )
+    local instance_city="sydney"
+    echo "$instance_city"
+      ;;
+    "europe-west1"* )
+    local instance_city="belgium"
+    echo "$instance_city"
+      ;;
+    "europe-west2"* )
+    local instance_city="london"
+    echo "$instance_city"
+      ;;
+    "europe-west3"* )
+    local instance_city="frankfurt"
+    echo "$instance_city"
+      ;;
+    "us-central1"* )
+    local instance_city="iowa"
+    echo "$instance_city"
+      ;;
+    "us-east1"* )
+    local instance_city="s_carolina"
+    echo "$instance_city"
+      ;;
+    "us-east4"* )
+    local instance_city="n_virginia"
+    echo "$instance_city"
+      ;;
+    "us-west1"* )
+    local instance_city="oregon"
+    echo "$instance_city"
+      ;;
+  esac
+}
+# [END get_instance_city]
 
 
 
@@ -209,7 +266,10 @@ function create_instances_array() {
 
 # [START stop_instances]
 function stop_instances() {
-  gcloud compute instances stop "$1" --zone "$2" --project $project >> logs/gpc_instances_start-stop_$time_stamp.log
+  local instance_name="$1"
+  local instance_zone="$2"
+  local instance_project="$3"
+  gcloud compute instances stop "$instance_name" --zone "$instance_zone" --project "$instance_project" >> "logs/gpc_instance_stop_$time_stamp.log"
 }
 # [END stop_instances]
 
@@ -217,16 +277,36 @@ function stop_instances() {
 
 # [START start_instances]
 function start_instances() {
-  gcloud compute instances start "$1" --zone "$2" --project $project >> logs/gpc_instances_start-stop_$time_stamp.log
+  local instance_name="$1"
+  local instance_zone="$2"
+  local instance_project="$3"
+  gcloud compute instances start "$instance_name" --zone "$instance_zone" --project "$instance_project" >> "logs/gpc_instance_start_$time_stamp.log"
 }
 # [END start_instances]
 
 
+
 # [START delete_instances]
 function delete_instances() {
-  gcloud compute instances delete "$1" --zone "$2" --project $project >> logs/gpc_instances_delete_$time_stamp.log
+  local instance_name="$1"
+  local instance_zone="$2"
+  local instance_project="$3"
+  gcloud compute instances delete "$instance_name" --zone "$instance_zone" --project "$instance_project" >> "logs/gpc_instance_delete_$time_stamp.log"
 }
 # [END delete_instances]
+
+
+
+# [START snapshot_instances]
+function snapshot_instances() {
+  local instance_name="$1"
+  local instance_zone="$2"
+  local instance_project="$3"
+  local snapshot_name=$(echo "${instance_name}" | sed -e 's/vm-/ss-/') # remove vm and substitute for ss, "vm-"
+  gcloud compute disks snapshot "$instance_name" --zone "$instance_zone" --project "$instance_project" --snapshot-names="$snapshot_name" >> "logs/gpc_instance_snapshot_$time_stamp.log"
+}
+# [END snapshot_instances]
+
 
 
 # [START action_on_instance]
@@ -271,15 +351,15 @@ function action_on_instance() {
             fi
     ;;
 
-		'n_virginia' )
-							if [[ "10#${utc_hour}" -eq '10#10' ]]; then
-								action='start'
-							elif [[ "10#${utc_hour}" -eq '10#22' ]]; then
-								action='stop'
-							else
-								action='none'
-							fi
-		;;
+    'n_virginia' )
+              if [[ "10#${utc_hour}" -eq '10#10' ]]; then
+                action='start'
+              elif [[ "10#${utc_hour}" -eq '10#22' ]]; then
+                action='stop'
+              else
+                action='none'
+              fi
+    ;;
 
     'iowa' )
               if [[ "10#${utc_hour}" -eq '10#11' ]]; then
@@ -340,72 +420,64 @@ function action_on_instance() {
 
 # [START instances_start_stop]
 function instances_start_stop() {
-      # loop through instances to start or stop
-      for i in "${instances_arr[@]}"; do {
-        instance_name=${i}
-        # echo "Instance: $instance_name"
+  # loop through instances to start or stop
+  for vm in "${instances_arr[@]}"; do {
+    local vm_name=${vm}
+    # echo "Instance: $vm_name"
 
-        # get status of instance i
-        status=`awk -v pat="$instance_name " '$0 ~ pat {print $3}' environments/gcp_instances_list_raw.txt`;
-        # echo "Status: $status"
+    # get status of instance
+    local status=$(get_instance_status "$vm_name")
+    # echo "Status: $status"
 
-        # get city of instance i
-        city=`awk -v pat="$instance_name " '$0 ~ pat {print $2}' environments/gcp_instances_list.txt`;
-        # echo "City: $city"
+    # get zone of instance
+    local zone=$(get_instance_zone "$vm_name")
+    # echo "Zone: $zone"
 
-        # get zone of instance i
-        zone=`awk -v pat="$instance_name " '$0 ~ pat {print $2}' environments/gcp_instances_list_raw.txt`
+    # get city of instance
+    local city=$(get_instance_city "$vm_name")
+    # echo "City: $city"
 
-        # action_on_instance function to see if instance should be started or stoppped
-        action_on_instance $city
-        # echo "Action: $action"
-        # echo ""
+    # action_on_instance function to see if instance should be started or stoppped
+    action_on_instance "$city"
+    # echo "Action: $action"
+    # echo ""
 
+    # make sure it's not a weekend before starting or stopping
+    if [ $utc_week_day != 'sat' ] && [ $utc_week_day != 'sun' ] ; then
+      if [[ ${status} == 'TERMINATED' && ${action} == 'start' ]] ; then
+        echo "==============================" >> logs/gpc_instances_start-stop_$time_stamp.log
+        echo " Action: START instance" >> logs/gpc_instances_start-stop_$time_stamp.log
+        start_instances "$vm_name" "${zone}"
+        echo " Instance: $vm_name" >> logs/gpc_instances_start-stop_$time_stamp.log
+        echo " Zone: ${zone}" >> logs/gpc_instances_start-stop_$time_stamp.log
+        echo " Status: ${status}" >> logs/gpc_instances_start-stop_$time_stamp.log
+        echo "" >> logs/gpc_instances_start-stop_$time_stamp.log
 
-        # make sure it's not a weekend before starting or stopping
-	if [ $utc_week_day != 'sat' ] && [ $utc_week_day != 'sun' ] ; then
-          if [[ ${status} == 'TERMINATED' && ${action} == 'start' ]] ; then
-							echo "==============================" >> logs/gpc_instances_start-stop_$time_stamp.log
-							echo " Action: START instance" >> logs/gpc_instances_start-stop_$time_stamp.log
-							start_instances "$instance_name" "${zone}"
-							echo " Instance: $instance_name" >> logs/gpc_instances_start-stop_$time_stamp.log
-							echo " Zone: ${zone}" >> logs/gpc_instances_start-stop_$time_stamp.log
-							echo " Status: ${status}" >> logs/gpc_instances_start-stop_$time_stamp.log
-							echo "" >> logs/gpc_instances_start-stop_$time_stamp.log
+      elif [[ ${status} == 'RUNNING' && ${action} == 'stop' ]]; then
+        echo "==============================" >> logs/gpc_instances_start-stop_$time_stamp.log
+        echo " Action: STOP instance" >> logs/gpc_instances_start-stop_$time_stamp.log
+        stop_instances "$vm_name" "${zone}"
+        echo " Instance: $vm_name" >> logs/gpc_instances_start-stop_$time_stamp.log
+        echo " Zone: ${zone}" >> logs/gpc_instances_start-stop_$time_stamp.log
+        echo " Status: ${status}" >> logs/gpc_instances_start-stop_$time_stamp.log
+        echo "" >> logs/gpc_instances_start-stop_$time_stamp.log
 
-            elif [[ ${status} == 'RUNNING' && ${action} == 'stop' ]]; then
-							echo "==============================" >> logs/gpc_instances_start-stop_$time_stamp.log
-							echo " Action: STOP instance" >> logs/gpc_instances_start-stop_$time_stamp.log
-              stop_instances "$instance_name" "${zone}"
-							echo " Instance: $instance_name" >> logs/gpc_instances_start-stop_$time_stamp.log
-							echo " Zone: ${zone}" >> logs/gpc_instances_start-stop_$time_stamp.log
-							echo " Status: ${status}" >> logs/gpc_instances_start-stop_$time_stamp.log
-							echo "" >> logs/gpc_instances_start-stop_$time_stamp.log
-
-            else
-							echo "==============================" >> logs/gpc_instances_start-stop_$time_stamp.log
-							echo " Action: none" >> logs/gpc_instances_start-stop_$time_stamp.log
-              echo " Instance: $instance_name" >> logs/gpc_instances_start-stop_$time_stamp.log
-							echo " Zone: ${zone}" >> logs/gpc_instances_start-stop_$time_stamp.log
-							echo " Status: ${status}" >> logs/gpc_instances_start-stop_$time_stamp.log
-							echo "" >> logs/gpc_instances_start-stop_$time_stamp.log
-          fi
-        else
-          echo "It's $utc_week_day, crontab takes weekends off."
-          echo "Instances will keep their current state"
-	  exit 0
-        fi
-      } done
+      else
+        echo "==============================" >> logs/gpc_instances_start-stop_$time_stamp.log
+        echo " Action: none" >> logs/gpc_instances_start-stop_$time_stamp.log
+        echo " Instance: $vm_name" >> logs/gpc_instances_start-stop_$time_stamp.log
+        echo " Zone: ${zone}" >> logs/gpc_instances_start-stop_$time_stamp.log
+        echo " Status: ${status}" >> logs/gpc_instances_start-stop_$time_stamp.log
+        echo "" >> logs/gpc_instances_start-stop_$time_stamp.log
+      fi
+    else
+      echo "It's $utc_week_day, crontab takes weekends off."
+      echo "Instances will keep their current state"
+      exit 0
+    fi
+  } done
 }
-# [START instances_start_stop]
+# [END instances_start_stop]
 
 
-
-# [MAIN start]
-make_directories
-get_current_time
-get_current_instances
-create_instances_array
-replace_zone_with_city
-instances_start_stop
-# [END]
+main "$@"
