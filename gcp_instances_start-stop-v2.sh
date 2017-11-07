@@ -36,9 +36,9 @@ exceptions=('devops' 'fgalindo' 'support-docker-registry')
 default_start_time='none'
 default_stop_time='1800'
 default_time_zone='est'
-time_zones=('CST' 'JST' 'IST' 'SGT' 'AEDT' 'AEST' 'CET' 'CEST' 'GMT' 'BSM' 'BRT' 'BRST' 'CST' 'CDT' 'EST' 'EDT' 'PST' 'PDT')
-
-
+valid_time_zones=('CST' 'JST' 'IST' 'SGT' 'AEDT' 'AEST' 'CET' 'CEST' 'GMT' 'BSM' 'BRT' 'BRST' 'CST' 'CDT' 'EST' 'EDT' 'PST' 'PDT')
+valid_days=('mon' 'tue' 'wed' 'thu' 'fri' 'sat' 'sun' 'all' 'weekdays' 'weekends')
+#valid_hours=('0000' '0100' '0200' '0300' '0400' '0500' '0600' '0700' '0800' '0900' '1000' '1100' '1200' '1200' '1400' '1500' '1600' '1700' '1800' '1900' '2000' '2100' '2200' '2300')
 
 # [MAIN start]
 function main() {
@@ -184,28 +184,29 @@ function check_scheduler_key(){
   # check1: length of array is 4
   if [[ "$scheduler_key_length" == 4 ]]; then
     local check1=true
-    local val1="${scheduler_key[0]}"
-    local val2="${scheduler_key[1]}"
-    local val3="${scheduler_key[2]}"
-    local val4="${scheduler_key[3]}"
+    local str1="${scheduler_key[0]}"
+    local str2="${scheduler_key[1]}"
+    local str3="${scheduler_key[2]}"
+    local str4="${scheduler_key[3]}"
+  else
+    local check1=false
   fi
-  # check2: first and second strings are number between 0-23 or 'default' or 'none'
-  if [[ "$val1" == 'default'  || "$val1" == 'none' || ]]; then
-    #statements
-  fi
+  # check2: first string is number between 0-23 or 'default' or 'none'
+  #TODO
 
+  # check3: second string is number between 0-23 or 'default' or 'none'
+  #TODO
 
   # check4: valid time_zone
-
+  $check4=$(is_contained "$str3" "${valid_time_zones[@]}")
 
   # check5: valid day selection
+  $check5=$(is_contained "$str4" "${valid_days[@]}")
 
-  if [[ "$check1" == true && "$check2" == true && "$check3" == true && "$check4" == true ]]; then
-     # 0 = true
-     return 0
+  if [[ "$check1" == true ]] && [[ "$check2" == true ]] && [[ "$check3" == true ]] && [[ "$check4" == true ]] && [[ "$check5" == true ]]; then
+     return 0 # 0 = true
   else
-    # 1 = false
-    return 1
+    return 1 # 1 = false
   fi
 }
 # [STOP check_scheduler_label]
@@ -233,6 +234,18 @@ function get_archive_date_label() {
   echo "${archive_date_key_array[@]}"
 }
 # [END get_archive_date_label]
+
+
+
+# [START is_contained]
+is_contained () {
+  local element array="$1"
+  shift
+  for element; do [[ "$element" == "$array" ]] && return 0; done
+  return 1
+}
+# [END is_contained]
+
 
 
 # [START check_archive_date_label]
@@ -540,6 +553,12 @@ function instances_control() {
     # get archive-date of instance
     local archive_array=($(get_archive_date_label "$instance_name" "$zone" "$project"))
     # echo "Archive-date: ${archive_array[@]}"
+    month="${archive_array[0]}"
+    # echo "month: $month"
+    day="${archive_array[1]}"
+    # echo "day: $day"
+    year="${archive_array[2]}"
+    # echo "year: $year"
 
 
     # action_on_instance function to see if instance should be started or stoppped

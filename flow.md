@@ -1,7 +1,6 @@
 # gcp_scheduler_step_by_step
 
 - get date and hour from the system
-- fetch projects - or know in advance about them
   - iterate through projects
       - save list of instances (NAME | ZONE | STATUS) in a tmp file *gcp_instances_list.txt*
         - iterate though list

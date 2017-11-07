@@ -79,6 +79,7 @@ function get_scheduler_label() {
   echo "${scheduler_key_array[@]}"
 }
 
+# get scheduler of instance
 scheduler_array=($(get_scheduler_label "$instance_name" "$zone" "$project"))
 
 echo "Scheduler: ${scheduler_array[@]}"
@@ -120,6 +121,13 @@ function get_archive_date_label() {
 
 # get archive-date of instance
 archive_array=($(get_archive_date_label "$instance_name" "$zone" "$project"))
+
 echo "Archive-date: ${archive_array[@]}"
+month="${archive_array[0]}"
+echo "month: $month"
+day="${archive_array[1]}"
+echo "day: $day"
+year="${archive_array[2]}"
+echo "year: $year"
 
 # [END get_archive_date_label]
