@@ -44,11 +44,11 @@ source ~/.bashrc
 function make_directories() {
 
 if [ ! -d 'environments' ]; then
-	mkdir environments
+  mkdir environments
 fi
 
 if [ ! -d 'logs' ]; then
-	mkdir logs
+  mkdir logs
 fi
 }
 # [STOP make_directories]
@@ -58,7 +58,7 @@ fi
 function get_current_time() {
     # date +"[option]"
 
-    # [option]	result
+    # [option]  result
     # %T     time; same as %H:%M:%S
     # %H     hour (00..23)
     # %w     day of week (0..6); 0 is Sunday
@@ -174,7 +174,7 @@ function stop_instances() {
 # [START start_instances]
 function start_instances() {
   #gcloud compute instances start "$1" --zone "$2" >> logs/gpc_instances_start-stop_$time_stamp.log
-	echo ""
+  echo ""
 }
 # [END start_instances]
 
@@ -221,15 +221,15 @@ function action_on_instance() {
             fi
     ;;
 
-		'n_virginia' )
-							if [[ "10#${utc_hour}" -eq '10#10' ]]; then
-								action='start'
-							elif [[ "10#${utc_hour}" -eq '10#22' ]]; then
-								action='stop'
-							else
-								action='none'
-							fi
-		;;
+    'n_virginia' )
+              if [[ "10#${utc_hour}" -eq '10#10' ]]; then
+                action='start'
+              elif [[ "10#${utc_hour}" -eq '10#22' ]]; then
+                action='stop'
+              else
+                action='none'
+              fi
+    ;;
 
     'iowa' )
               if [[ "10#${utc_hour}" -eq '10#11' ]]; then
@@ -289,63 +289,69 @@ function action_on_instance() {
 
 
 # [START instances_start_stop]
-function instances_start_stop() {
-      # loop through instances to start or stop
-      for i in "${instances_arr[@]}"; do {
-        instance_name=${i}
-        # echo "Instance: $instance_name"
+  function instances_start_stop() {
+    # loop through instances to start or stop
+    for i in "${instances_arr[@]}"; do {
+      instance_name=${i}
+      # echo "Instance: $instance_name"
 
-        # get status of instance i
-        status=`awk -v pat="$instance_name " '$0 ~ pat {print $3}' environments/gcp_instances_list_raw.txt`;
-        # echo "Status: $status"
+      # get status of instance i
+      status=`awk -v pat="$instance_name " '$0 ~ pat {print $3}' environments/gcp_instances_list_raw.txt`;
+      # echo "Status: $status"
 
-        # get city of instance i
-        city=`awk -v pat="$instance_name " '$0 ~ pat {print $2}' environments/gcp_instances_list.txt`;
-        # echo "City: $city"
+      # get city of instance i
+      city=`awk -v pat="$instance_name " '$0 ~ pat {print $2}' environments/gcp_instances_list.txt`;
+      # echo "City: $city"
 
-        # get zone of instance i
-        zone=`awk -v pat="$instance_name " '$0 ~ pat {print $2}' environments/gcp_instances_list_raw.txt`
+      # get zone of instance i
+      zone=`awk -v pat="$instance_name " '$0 ~ pat {print $2}' environments/gcp_instances_list_raw.txt`
 
-        # action_on_instance function to see if instance should be started or stoppped
-        action_on_instance $city
-        # echo "Action: $action"
-        # echo ""
+      # action_on_instance function to see if instance should be started or stoppped
+      action_on_instance $city
+      # echo "Action: $action"
+      # echo ""
 
 
-        # make sure it's not a weekend before starting or stopping and it's not a repository
-	if [[ $utc_week_day != 'sat' ]] && [[ $utc_week_day != 'sun' ]] && [[ $instance_name != *"support-docker-registry" ]] && [[ $instance_name != "vm-ctan-ps-onboarding-"* ]]; then
-          if [[ ${status} == 'TERMINATED' && ${action} == 'start' ]] ; then
-							echo "==============================" >> logs/gpc_instances_start-stop_$time_stamp.log
-							echo " Action: START instance" >> logs/gpc_instances_start-stop_$time_stamp.log
-							start_instances "$instance_name" "${zone}"
-							echo " Instance: $instance_name" >> logs/gpc_instances_start-stop_$time_stamp.log
-							echo " Zone: ${zone}" >> logs/gpc_instances_start-stop_$time_stamp.log
-							echo " Status: ${status}" >> logs/gpc_instances_start-stop_$time_stamp.log
-							echo "" >> logs/gpc_instances_start-stop_$time_stamp.log
+      # make sure it's not a weekend before starting or stopping and it's not a repository
+      if [[ $utc_week_day != 'sat' ]] && [[ $utc_week_day != 'sun' ]]; then
+        if [[ $instance_name != *"support-docker-registry" ]] && [[ $instance_name != *"-00080135"* ]]; then
+          if [[ ${status} == 'TERMINATED']] && [[ ${action} == 'start' ]] ; then
+              echo "==============================" >> logs/gpc_instances_start-stop_$time_stamp.log
+              echo " Action: START instance" >> logs/gpc_instances_start-stop_$time_stamp.log
+              start_instances "$instance_name" "${zone}"
+              echo " Instance: $instance_name" >> logs/gpc_instances_start-stop_$time_stamp.log
+              echo " Zone: ${zone}" >> logs/gpc_instances_start-stop_$time_stamp.log
+              echo " Status: ${status}" >> logs/gpc_instances_start-stop_$time_stamp.log
+              echo "" >> logs/gpc_instances_start-stop_$time_stamp.log
 
-            elif [[ ${status} == 'RUNNING' && ${action} == 'stop' ]]; then
-							echo "==============================" >> logs/gpc_instances_start-stop_$time_stamp.log
-							echo " Action: STOP instance" >> logs/gpc_instances_start-stop_$time_stamp.log
+            elif [[ ${status} == 'RUNNING' ]] && [[ ${action} == 'stop' ]]; then
+              echo "==============================" >> logs/gpc_instances_start-stop_$time_stamp.log
+              echo " Action: STOP instance" >> logs/gpc_instances_start-stop_$time_stamp.log
               stop_instances "$instance_name" "${zone}"
-							echo " Instance: $instance_name" >> logs/gpc_instances_start-stop_$time_stamp.log
-							echo " Zone: ${zone}" >> logs/gpc_instances_start-stop_$time_stamp.log
-							echo " Status: ${status}" >> logs/gpc_instances_start-stop_$time_stamp.log
-							echo "" >> logs/gpc_instances_start-stop_$time_stamp.log
+              echo " Instance: $instance_name" >> logs/gpc_instances_start-stop_$time_stamp.log
+              echo " Zone: ${zone}" >> logs/gpc_instances_start-stop_$time_stamp.log
+              echo " Status: ${status}" >> logs/gpc_instances_start-stop_$time_stamp.log
+              echo "" >> logs/gpc_instances_start-stop_$time_stamp.log
 
             else
-							echo "==============================" >> logs/gpc_instances_start-stop_$time_stamp.log
-							echo " Action: none" >> logs/gpc_instances_start-stop_$time_stamp.log
+              echo "==============================" >> logs/gpc_instances_start-stop_$time_stamp.log
+              echo " Action: none" >> logs/gpc_instances_start-stop_$time_stamp.log
               echo " Instance: $instance_name" >> logs/gpc_instances_start-stop_$time_stamp.log
-							echo " Zone: ${zone}" >> logs/gpc_instances_start-stop_$time_stamp.log
-							echo " Status: ${status}" >> logs/gpc_instances_start-stop_$time_stamp.log
-							echo "" >> logs/gpc_instances_start-stop_$time_stamp.log
+              echo " Zone: ${zone}" >> logs/gpc_instances_start-stop_$time_stamp.log
+              echo " Status: ${status}" >> logs/gpc_instances_start-stop_$time_stamp.log
+              echo "" >> logs/gpc_instances_start-stop_$time_stamp.log
           fi
         else
+          echo "$instance_name exception for nregonda."
+          echo "Instance will keep its current state".
+          exit 0
+        fi
+      else
           echo "It's $utc_week_day, crontab takes weekends off."
           echo "Instances will keep their current state"
-	  exit 0
-        fi
-      } done
+          exit 0
+      fi
+  } done
 }
 # [START instances_start_stop]
 
