@@ -1,20 +1,25 @@
 #!/bin/bash
-
-source ~/.bashrc
-
-# Copyright 2017 Talend Inc. All Rights Reserved.
 #
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
+# Copyright 2017 fgalindo@talend.com
 #
-#    http://www.apache.org/licenses/LICENSE-2.0
+# Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"),
+# to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense,
+# and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
 #
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
+# The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+# DEALINGS IN THE SOFTWARE.
+#
+#
+################################################################################
+#
+# GCP scheduler - start, stop instances
+#
+################################################################################
+#
 #
 #Scheduler to be run hourly as a cronjob under /etc/crontab
 #Starts stops machines depending on their schedule and zone
@@ -27,6 +32,7 @@ source ~/.bashrc
 #
 #For more information, see the README.md
 #
+source ~/.bashrc
 
 ## Global variables
 #
@@ -313,8 +319,18 @@ function action_on_instance() {
 
 
       # make sure it's not a weekend before starting or stopping and it's not a repository
-      if [[ $utc_week_day != 'sat' ]] && [[ $utc_week_day != 'sun' ]]; then
-        if [[ $instance_name != *"support-docker-registry" ]] && [[ $instance_name != *"-00080135"* ]]; then
+      if [[ $utc_week_day == 'sat' ]] || [[ $utc_week_day == 'sun' ]]; then
+        echo "It's $utc_week_day, crontab takes weekends off."
+        echo "Instances will keep their current state"
+        exit 0
+
+      else
+        if [[ $instance_name == *"support-docker-registry" ]] || [[ $instance_name == *"-00080135"* ]]; then
+          echo "$instance_name exception for nregonda or support-docker-registry."
+          echo "Instance will keep its current state".
+          exit 0
+
+        else
           if [[ ${status} == 'TERMINATED' ]] && [[ ${action} == 'start' ]] ; then
               echo "==============================" >> logs/gpc_instances_start-stop_$time_stamp.log
               echo " Action: START instance" >> logs/gpc_instances_start-stop_$time_stamp.log
@@ -341,15 +357,7 @@ function action_on_instance() {
               echo " Status: ${status}" >> logs/gpc_instances_start-stop_$time_stamp.log
               echo "" >> logs/gpc_instances_start-stop_$time_stamp.log
           fi
-        else
-          echo "$instance_name exception for nregonda."
-          echo "Instance will keep its current state".
-          exit 0
         fi
-      else
-          echo "It's $utc_week_day, crontab takes weekends off."
-          echo "Instances will keep their current state"
-          exit 0
       fi
   } done
 }
