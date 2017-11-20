@@ -1,20 +1,25 @@
-instance#!/bin/bash
-
-source ~/.bashrc
-
-# Copyright 2017 Talend Inc. All Rights Reserved.
+#!/bin/bash
 #
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
+# Copyright 2017 fgalindo@talend.com
 #
-#    http://www.apache.org/licenses/LICENSE-2.0
+# Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"),
+# to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense,
+# and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
 #
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
+# The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+# DEALINGS IN THE SOFTWARE.
+#
+#
+################################################################################
+#
+# GCP scheduler - start, stop, snapshot and shutdown instances
+#
+################################################################################
+#
 #
 #Scheduler to be run hourly as a cronjob under /etc/crontab
 #Starts stops machines depending on their schedule and zone
@@ -27,16 +32,17 @@ source ~/.bashrc
 #
 #For more information, see the README.md
 #
+source ~/.bashrc
 
 ## Global variables
 projects=('css-us' 'css-apac' 'css-emea' 'probable-sector-147517')
 scheduler_label='scheduler'
 archive_date_label='archive-date'
-exceptions=('devops' 'fgalindo' 'support-docker-registry')
+exceptions=('devops' 'support-docker-registry')
 default_start_time='none'
 default_stop_time='1800'
 default_time_zone='est'
-valid_time_zones=('CST' 'JST' 'IST' 'SGT' 'AEDT' 'AEST' 'CET' 'CEST' 'GMT' 'BSM' 'BRT' 'BRST' 'CST' 'CDT' 'EST' 'EDT' 'PST' 'PDT')
+valid_time_zones=('CST' 'JST' 'IST' 'SGT' 'AEDT' 'AEST' 'CET' 'CEST' 'GMT' 'BSM' 'BRT' 'BRST' 'CT' 'CDT' 'EST' 'EDT' 'PST' 'PDT')
 valid_days=('mon' 'tue' 'wed' 'thu' 'fri' 'sat' 'sun' 'all' 'weekdays' 'weekends')
 #valid_hours=('0000' '0100' '0200' '0300' '0400' '0500' '0600' '0700' '0800' '0900' '1000' '1100' '1200' '1200' '1400' '1500' '1600' '1700' '1800' '1900' '2000' '2100' '2200' '2300')
 
@@ -333,7 +339,7 @@ function get_instance_region() {
       ;;
     "us-central1"* )
     local instance_city="iowa"
-    # CST - Central Standard Time, UTC/GMT -6 hours (from Nov 5 to Mar 12)
+    # CT - Central Standard Time, UTC/GMT -6 hours (from Nov 5 to Mar 12)
     # CDT - Central Daylight Time, UTC/GMT -5 hours (from Mar 12 to Nov 5)
     echo "$instance_city"
       ;;
@@ -399,7 +405,7 @@ function snapshot_instances() {
   local instance_name="$1"
   local instance_zone="$2"
   local instance_project="$3"
-  local snapshot_name=$(echo "${instance_name}" | sed -e 's/vm-/ss-/') # remove instance and substitute for ss, "vm-"
+  local snapshot_name=$(echo "${instance_name}" | sed -e 's/vm-/ss-/') # snapshots share the instance name with a different prefix: "vm-instance" --> "ss-instance"
   gcloud compute disks snapshot "$instance_name" --zone "$instance_zone" --project "$instance_project" --snapshot-names="$snapshot_name" >> "logs/gpc_instance_snapshot_$time_stamp.log"
 }
 # [END snapshot_instances]

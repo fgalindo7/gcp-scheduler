@@ -320,43 +320,40 @@ function action_on_instance() {
 
       # make sure it's not a weekend before starting or stopping and it's not a repository
       if [[ $utc_week_day == 'sat' ]] || [[ $utc_week_day == 'sun' ]]; then
-        echo "It's $utc_week_day, crontab takes weekends off."
-        echo "Instances will keep their current state"
+        echo "It is $utc_week_day, instance $instance_name will keep status $status."
         exit 0
-
+      elif [[ $instance_name == *"support-docker-registry" ]]; then
+        echo "Instance $instance_name is a support-docker-registry and should always keep status $status."
+        exit 0
+      elif [[ $instance_name == *"-00080135"* ]] || [[ $instance_name == *"-00086431"* ]]; then
+        echo "Instance $instance_name has been hardcoded to stay up."
+        exit 0
       else
-        if [[ $instance_name == *"support-docker-registry" ]] || [[ $instance_name == *"-00080135"* ]]; then
-          echo "$instance_name exception for nregonda or support-docker-registry."
-          echo "Instance will keep its current state".
-          exit 0
+        if [[ ${status} == 'TERMINATED' ]] && [[ ${action} == 'start' ]] ; then
+          echo "==============================" >> logs/gpc_instances_start-stop_$time_stamp.log
+          echo " Action: START instance" >> logs/gpc_instances_start-stop_$time_stamp.log
+          start_instances "$instance_name" "${zone}"
+          echo " Instance: $instance_name" >> logs/gpc_instances_start-stop_$time_stamp.log
+          echo " Zone: ${zone}" >> logs/gpc_instances_start-stop_$time_stamp.log
+          echo " Status: ${status}" >> logs/gpc_instances_start-stop_$time_stamp.log
+          echo "" >> logs/gpc_instances_start-stop_$time_stamp.log
+
+        elif [[ ${status} == 'RUNNING' ]] && [[ ${action} == 'stop' ]]; then
+          echo "==============================" >> logs/gpc_instances_start-stop_$time_stamp.log
+          echo " Action: STOP instance" >> logs/gpc_instances_start-stop_$time_stamp.log
+          stop_instances "$instance_name" "${zone}"
+          echo " Instance: $instance_name" >> logs/gpc_instances_start-stop_$time_stamp.log
+          echo " Zone: ${zone}" >> logs/gpc_instances_start-stop_$time_stamp.log
+          echo " Status: ${status}" >> logs/gpc_instances_start-stop_$time_stamp.log
+          echo "" >> logs/gpc_instances_start-stop_$time_stamp.log
 
         else
-          if [[ ${status} == 'TERMINATED' ]] && [[ ${action} == 'start' ]] ; then
-              echo "==============================" >> logs/gpc_instances_start-stop_$time_stamp.log
-              echo " Action: START instance" >> logs/gpc_instances_start-stop_$time_stamp.log
-              start_instances "$instance_name" "${zone}"
-              echo " Instance: $instance_name" >> logs/gpc_instances_start-stop_$time_stamp.log
-              echo " Zone: ${zone}" >> logs/gpc_instances_start-stop_$time_stamp.log
-              echo " Status: ${status}" >> logs/gpc_instances_start-stop_$time_stamp.log
-              echo "" >> logs/gpc_instances_start-stop_$time_stamp.log
-
-            elif [[ ${status} == 'RUNNING' ]] && [[ ${action} == 'stop' ]]; then
-              echo "==============================" >> logs/gpc_instances_start-stop_$time_stamp.log
-              echo " Action: STOP instance" >> logs/gpc_instances_start-stop_$time_stamp.log
-              stop_instances "$instance_name" "${zone}"
-              echo " Instance: $instance_name" >> logs/gpc_instances_start-stop_$time_stamp.log
-              echo " Zone: ${zone}" >> logs/gpc_instances_start-stop_$time_stamp.log
-              echo " Status: ${status}" >> logs/gpc_instances_start-stop_$time_stamp.log
-              echo "" >> logs/gpc_instances_start-stop_$time_stamp.log
-
-            else
-              echo "==============================" >> logs/gpc_instances_start-stop_$time_stamp.log
-              echo " Action: none" >> logs/gpc_instances_start-stop_$time_stamp.log
-              echo " Instance: $instance_name" >> logs/gpc_instances_start-stop_$time_stamp.log
-              echo " Zone: ${zone}" >> logs/gpc_instances_start-stop_$time_stamp.log
-              echo " Status: ${status}" >> logs/gpc_instances_start-stop_$time_stamp.log
-              echo "" >> logs/gpc_instances_start-stop_$time_stamp.log
-          fi
+          echo "==============================" >> logs/gpc_instances_start-stop_$time_stamp.log
+          echo " Action: none" >> logs/gpc_instances_start-stop_$time_stamp.log
+          echo " Instance: $instance_name" >> logs/gpc_instances_start-stop_$time_stamp.log
+          echo " Zone: ${zone}" >> logs/gpc_instances_start-stop_$time_stamp.log
+          echo " Status: ${status}" >> logs/gpc_instances_start-stop_$time_stamp.log
+          echo "" >> logs/gpc_instances_start-stop_$time_stamp.log
         fi
       fi
   } done
