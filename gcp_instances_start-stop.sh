@@ -105,7 +105,7 @@ function get_current_time() {
 # [START get_current_instances]
 function get_current_instances() {
     # list of NAME ZONE STATUS without header sorted by zone
-    gcloud compute instances list | awk 'NR>1{print $1, $2, $NF}' > environments/gcp_instances_list.txt
+    gcloud compute instances list --project probable-sector-147517 | awk 'NR>1{print $1, $2, $NF}' > environments/gcp_instances_list.txt
 }
 # [END get_current_instances]
 
@@ -299,22 +299,22 @@ function action_on_instance() {
     # loop through instances to start or stop
     for i in "${instances_arr[@]}"; do {
       instance_name=${i}
-      # echo "Instance: $instance_name"
+      #echo "Instance: $instance_name"
 
       # get status of instance i
       status=`awk -v pat="$instance_name " '$0 ~ pat {print $3}' environments/gcp_instances_list_raw.txt`;
-      # echo "Status: $status"
+      #echo "Status: $status"
 
       # get city of instance i
       city=`awk -v pat="$instance_name " '$0 ~ pat {print $2}' environments/gcp_instances_list.txt`;
-      # echo "City: $city"
+      #echo "City: $city"
 
       # get zone of instance i
       zone=`awk -v pat="$instance_name " '$0 ~ pat {print $2}' environments/gcp_instances_list_raw.txt`
 
       # action_on_instance function to see if instance should be started or stoppped
       action_on_instance $city
-      # echo "Action: $action"
+      #echo "Action: $action"
       # echo ""
 
 
@@ -324,10 +324,8 @@ function action_on_instance() {
         exit 0
       elif [[ $instance_name == *"support-docker-registry" ]]; then
         echo "Instance $instance_name is a support-docker-registry and should always keep status $status."
-        exit 0
-      elif [[ $instance_name == *"-00080135"* ]] || [[ $instance_name == *"-00086431"* ]]; then
+      elif [[ $instance_name == *"-00086431"* ]] || [[ $instance_name == *"-00080135"* ]]; then
         echo "Instance $instance_name has been hardcoded to stay up."
-        exit 0
       else
         if [[ ${status} == 'TERMINATED' ]] && [[ ${action} == 'start' ]] ; then
           echo "==============================" >> logs/gpc_instances_start-stop_$time_stamp.log
@@ -337,7 +335,6 @@ function action_on_instance() {
           echo " Zone: ${zone}" >> logs/gpc_instances_start-stop_$time_stamp.log
           echo " Status: ${status}" >> logs/gpc_instances_start-stop_$time_stamp.log
           echo "" >> logs/gpc_instances_start-stop_$time_stamp.log
-
         elif [[ ${status} == 'RUNNING' ]] && [[ ${action} == 'stop' ]]; then
           echo "==============================" >> logs/gpc_instances_start-stop_$time_stamp.log
           echo " Action: STOP instance" >> logs/gpc_instances_start-stop_$time_stamp.log
@@ -346,7 +343,6 @@ function action_on_instance() {
           echo " Zone: ${zone}" >> logs/gpc_instances_start-stop_$time_stamp.log
           echo " Status: ${status}" >> logs/gpc_instances_start-stop_$time_stamp.log
           echo "" >> logs/gpc_instances_start-stop_$time_stamp.log
-
         else
           echo "==============================" >> logs/gpc_instances_start-stop_$time_stamp.log
           echo " Action: none" >> logs/gpc_instances_start-stop_$time_stamp.log
