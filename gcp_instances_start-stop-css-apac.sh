@@ -323,7 +323,7 @@ function action_on_instance() {
       if [[ $utc_week_day == 'sat' ]] || [[ $utc_week_day == 'sun' ]]; then
         echo "It is $utc_week_day, instance $instance_name will keep status $status."
         exit 0
-      elif [[ $instance_name == *"support-docker-registry" ]]; then
+      elif [[ $instance_name == "vm-devops-china-google-login" ]]; then
         echo "Instance $instance_name is a support-docker-registry and should always keep status $status."
       elif [[ $instance_name == *"-00086431"* ]] || [[ $instance_name == *"-00080135"* ]]; then
         echo "Instance $instance_name has been hardcoded to stay up."
