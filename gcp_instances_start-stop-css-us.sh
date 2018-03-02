@@ -325,7 +325,11 @@ function action_on_instance() {
         exit 0
       elif [[ $instance_name == *"support-docker-registry" ]]; then
         echo "Instance $instance_name is a support-docker-registry and should always keep status $status."
-      elif [[ $instance_name == *"-00086431"* ]] || [[ $instance_name == *"-00080135"* ]]; then
+      elif [[ $instance_name == *"-00086431"* ]]; then
+        echo "Instance $instance_name has been hardcoded to stay up."
+      elif [[ $instance_name == *"-00080135"* ]]; then
+        echo "Instance $instance_name has been hardcoded to stay up."
+      elif [[ $instance_name == *"-00081122"* ]]; then
         echo "Instance $instance_name has been hardcoded to stay up."
       else
         if [[ ${status} == 'TERMINATED' ]] && [[ ${action} == 'start' ]] ; then
