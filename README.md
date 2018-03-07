@@ -42,12 +42,12 @@ The environment that we are currently using is an AWS t2.micro (free tier).
 | us-west1-b		          |	oregon		    |	irvine		  |	1300	  |	0100  	 |
 | us-west1-a		          | oregon		    |	irvine		  |	1300	  |	0100     |
 | us-west1-c		          | oregon		    |	irvine		  |	1300	  |	0100     |
-| australia-southeast1-a	|	sydney		    |			        |	2000	  |	0800     |
-| australia-southeast1-c	|	sydney		    |			        |	2000	  |	0800	   |
-| australia-southeast1-b	|	sydney		    |             |	2000	  |	0800	   |
-| asia-northeast1-c	      |	tokyo		      |			        |	2100	  |	0900	   |
-| asia-northeast1-a	      |	tokyo		      |			        |	2100	  |	0900	   |
-| asia-northeast1-b	      |	tokyo		      |			        |	2100	  |	0900	   |
+| australia-southeast1-a	|	sydney		    |	sydney      |	2000	  |	0800     |
+| australia-southeast1-c	|	sydney		    |	sydney	    |	2000	  |	0800	   |
+| australia-southeast1-b	|	sydney		    | sydney      |	2000	  |	0800	   |
+| asia-northeast1-c	      |	tokyo		      |	tokyo       |	2100	  |	0900	   |
+| asia-northeast1-a	      |	tokyo		      |	tokyo       |	2100	  |	0900	   |
+| asia-northeast1-b	      |	tokyo		      |	tokyo       |	2100	  |	0900	   |
 | asia-east1-a		        | taiwan		    |	beijing     |	2200	  |	1000	   |
 | asia-east1-c		        | taiwan		    |	beijing     |	2200	  |	1000	   |
 | asia-east1-b          	| taiwan		    |	beijing     |	2200	  |	1000	   |
