@@ -3,14 +3,25 @@
 ## Summary
 Starts, stops, and deletes GCP instances based on their scheduler and archive-date labels: <br />
 **Label         :   Key** <br />
-**scheduler     :   <start time>-<stop time>-<TZ Identifier>-<days of the week>** <br />
-**archive-date  :   <mm>-<dd>-<yyyy>** <br />
+**scheduler     :   start_time-stop_time-tz_identifier-days_of_the_week** <br />
+**archive-date  :   mm-dd-yyyy** <br />
+
+<br />
+The following values are acceptable for the scheduler key: </br>
+**key**           | **Values**
+-|-
+start_time        | 0000 to 2359
+stop_time         | 0000 to 2359
+tz_identifier     | *see table below*
+days_of_the_week  | mon, tue, wed, thu, fri, sat, sun, all, weekdays, weekends
+**Note**: days of the week combinations can be made if separated by underscores.
+
 <br />
 The script pulls the current instances from GCP under the desired projects. Depending on their labels, it generates the start, stop, or snapshot and delete **gcloud compute** commands.
 
 ## Setup
 This script is setup as a cronjob to be run every minute on an AWS t2.micro (free tier). <br />
-**\* * * * * ec2-user /home/ec2-user/talend-gpc-scheduler/gcp_instances_start-stop.sh** <br />
+**\* * * * *    ec2-user /home/ec2-user/talend-gpc-scheduler/gcp_instances_start-stop.sh** <br />
 <br />
 
 ## Zones
