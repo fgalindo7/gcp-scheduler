@@ -3,10 +3,10 @@
 ## Summary
 Starts, stops, and deletes GCP instances based on their scheduler and archive-date labels: <br />
 
-Label         |   Key
------------------ | -------------
-**scheduler:**    |   start_time-stop_time-tz_identifier-days_of_the_week
-**archive-date:** |   mm-dd-yyyy
+Label        | Key
+------------ | -------------
+scheduler    | start_time-stop_time-tz_identifier-days_of_the_week
+archive-date | mm-dd-yyyy
 
 The following values are acceptable for the scheduler key sections: <br />
 
@@ -38,7 +38,7 @@ https://en.wikipedia.org/wiki/List_of_tz_database_time_zones  <br />
 Only the following TZ identifiers can be used in the scheduler:
 
 TZ Identifier | Meaning | Time offset from UTC  
---------------- | ----------- | ---------------
+--------------| ------- | ---------------
 AEDT | Australian Eastern Daylight Time | UTC/GMT +11 hours (between Oct 1 and Apr 2)
 AEST | Australian Eastern Standard Time | UTC/GMT +10 hours (between Apr 2 and Oct 1)
 JST | Japan Standard Time | UTC/GMT +9 hours
@@ -58,6 +58,5 @@ CT | Central Standard Time | UTC/GMT -6 hours (from Nov 5 to Mar 12)
 PDT | Pacific Daylight Time | UTC/GMT -7 hours (from Mar 12 to Nov 5)
 PST | Pacific Standard Time | UTC/GMT -8 hours (from Nov 5 to Mar 12)
 
-<br />
 ## Contributors
-@fgalindo7 <br />
+@fgalindo7
