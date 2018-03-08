@@ -2,19 +2,18 @@
 
 ## Summary
 Starts, stops, and deletes GCP instances based on their scheduler and archive-date labels: <br />
-**Label         |   Key** <br />
--|-
-**scheduler:    |   start_time-stop_time-tz_identifier-days_of_the_week** <br />
-**archive-date: |   mm-dd-yyyy** <br />
+Label         |   Key
+----------------- | -------------
+**scheduler:**    |   start_time-stop_time-tz_identifier-days_of_the_week
+**archive-date:** |   mm-dd-yyyy
 
-<br />
 The following values are acceptable for the scheduler key: </br>
-| **key**           | **Values**   |
---------------------|--------------|
-| start_time        | 0000 to 2359 |
-| stop_time         | 0000 to 2359 |
-| tz_identifier     | *see table below* |
-| days_of_the_week  | mon, tue, wed, thu, fri, sat, sun, all, weekdays, weekends |
+Key sections | Values   
+-------------| -------------
+start_time       | 0000 to 2359
+stop_time        | 0000 to 2359
+tz_identifier    | *see table below*
+days_of_the_week | mon, tue, wed, thu, fri, sat, sun, all, weekdays, weekends
 
 **Note**: days of the week combinations can be made if separated by underscores.
 
@@ -36,8 +35,8 @@ https://en.wikipedia.org/wiki/List_of_tz_database_time_zones  </br>
 </br>
 Only the following TZ identifiers can be used in the scheduler:
 </br>
- **TZ Identifier** | **Meaning** | **Time offset from UTC**  
-----------------|-------------|----------------
+TZ Identifier | Meaning | Time offset from UTC  
+--------------- | ----------- | ---------------
 AEDT | Australian Eastern Daylight Time | UTC/GMT +11 hours (between Oct 1 and Apr 2)
 AEST | Australian Eastern Standard Time | UTC/GMT +10 hours (between Apr 2 and Oct 1)
 JST | Japan Standard Time | UTC/GMT +9 hours
