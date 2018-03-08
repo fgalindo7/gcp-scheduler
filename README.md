@@ -25,11 +25,10 @@ The script pulls the current instances from GCP under the desired projects. Depe
 ## Setup
 This script is setup as a cronjob to be run every minute on an AWS t2.micro (free tier). <br />
 <br />
-**\* * * * *      ec2-user      ~/gcp_instances_start-stop-v2.sh** <br />
+\* * * * *      ec2-user      ~/gcp_instances_start-stop-v2.sh <br />
 <br />
 
 ## Zones
-**GCP Zones, Cities, start & stop times** <br />
 In accordance with the IANA, we will use the following TZ to
 start, stop and remove instances: <br />
 <br />
