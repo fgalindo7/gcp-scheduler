@@ -43,7 +43,7 @@ exceptions=("devops" "support-docker-registry")
 default_start_time="none"
 default_stop_time="1800"
 default_time_zone="est"
-valid_time_zones=("cst" "jst" "ist" "sgt" "aedt" "aest" "cet" "cest" "gmt" "bsm" "brt" "brst" "ct" "cdt" "est" "edt" "pst" "pdt")
+valid_time_zones=("aedt" "aest" "jst" "cst" "sgt" "ist" "cest" "cet" "bsm" "gmt" "brst" "brt" "edt" "cdt" "est" "ct" "pdt" "pst")
 valid_days=("mon" "tue" "wed" "thu" "fri" "sat" "sun" "all" "weekdays" "weekends")
 
 # [MAIN start]
@@ -71,7 +71,6 @@ if [ ! -d "logs" ]; then
 fi
 }
 # [END make_directories]
-
 
 
 # [START get_current_time]
@@ -215,7 +214,6 @@ function check_scheduler_key_array () {
   else
     check1=false
   fi
-
 
   # check2: is str1 an integer between 0000-2359 or "default" or "none"?
   check2=$(check_time $str1)
@@ -444,76 +442,103 @@ function get_instance_status () {
 # [END get_instance_status]
 
 
-
 # [START get_zone_time]
 function get_zone_time () {
   local instance_zone="$1"
+  local time_format="%H%M" # no space between H and M, e.g. 4pm == 1600
+  local TZ
 
-  case "$instance_zone" in
-    "cst" )
-    # CST - China Standard Time, UTC/GMT +8 hours
-      ;;
-    "jst" )
-    # JST - Japan Standard Time, UTC/GMT +9 hours
-      ;;
-    "ist" )
-    # IST - India Standard Time, UTC/GMT +5:30 hours
-      ;;
-    "sgt" )
-    # SGT - Singapore Time, UTC/GMT +8 hours
-      ;;
-    "aedt" )
-    # AEDT - Australian Eastern Daylight Time, UTC/GMT +11 hours (between Oct 1 and Apr 2)
-      ;;
-    "aest" )
-    # AEST - Australian Eastern Standard Time, UTC/GMT +10 hours (between Apr 2 and Oct 1)
-      ;;
-    "cet" )
-    # CET - Central European Time, UTC/GMT +1 hour (between Oct 29 and Mar 26)
-      ;;
-    "cest" )
-    # CEST - Central European Summer Time, UTC/GMT +2 hours (between Mar 26 and Oct 29)
-      ;;
-    "gmt" )
-    # GMT - Greenwich Mean Time, UTC/GMT no offset (between Oct 29 and Mar 26)
-    "bsm" )
-    # BSM - British Summer Time, UTC/GMT +1 hour (between Mar 26 and Oct 29)
-      ;;
-    "cet" )
-    # CET - Central European Time, UTC/GMT +1 hour (between Oct 29 and Mar 26)
-      ;;
-    "cest" )
-    # CEST - Central European Summer Time, UTC/GMT +2 hours (between Mar 26 and Oct 29)
-      ;;
-    "brt" )
-    # BRT- Brasilia Time, UTC/GMT -3 hours (from Feb 18 to Oct 14)
-      ;;
-    "brst" )
-    # BRST - Brasilia Summer Time, UTC/GMT -2 hours (Oct 14 to Feb 18)
-      ;;
-    "ct" )
-    # CT - Central Standard Time, UTC/GMT -6 hours (from Nov 5 to Mar 12)
-      ;;
-    "cdt" )
-    # CDT - Central Daylight Time, UTC/GMT -5 hours (from Mar 12 to Nov 5)
-      ;;
-    "est" )
-    # EST - Eastern Standard Time, UTC/GMT -5 hours (from Nov 5 to Mar 12)
-      ;;
-    "edt" )
-    # EDT	- Eastern Daylight Time, UTC/GMT -4 hours (from Mar 12 to Nov 5)
-      ;;
-    "us-east4" )
-    # EST - Eastern Standard Time, UTC/GMT -5 hours (from Nov 5 to Mar 12)
-    # EDT	- Eastern Daylight Time, UTC/GMT -4 hours (from Mar 12 to Nov 5)
-      ;;
-    "us-west1" )
-    # PST - Pacific Standard Time, UTC/GMT -8 hours (from Nov 5 to Mar 12)
-    # PDT- Pacific Daylight Time, UTC/GMT -7 hours (from Mar 12 to Nov 5)
-      ;;
-  esac
+  TZ=$(get_tz_identifier "$instance_zone")
+  zone_time=($(TZ=$TZ date +"$time_format"))
 }
-# # [END get_zone_time]
+# [END get_zone_time]
+
+
+# [START get_zone_date]
+function get_zone_date () {
+  local instance_zone="$1"
+  local date_format="%m %d %y" # space between Month, Day, Year, e.g. 03 08 18
+  local TZ
+
+  TZ=$(get_tz_identifier "$instance_zone")
+  zone_date=($(TZ=$TZ date +"$date_format"))
+}
+# [END zone_date]
+
+# [START get_tz_identifier]
+function get_tz_identifier () {
+  local tz_idenfitier   # https://en.wikipedia.org/wiki/List_of_tz_database_time_zones
+  local instance_zone=$1
+  case "$instance_zone" in
+
+    "aedt" )
+      # AEDT - Australian Eastern Daylight Time, UTC/GMT +11 hours (between Oct 1 and Apr 2)
+      tz_idenfitier="Etc/GMT-11"
+    ;;
+    "aest" )
+      # AEST - Australian Eastern Standard Time, UTC/GMT +10 hours (between Apr 2 and Oct 1)
+      tz_idenfitier="Etc/GMT-10"
+    ;;
+    "jst" )
+      # JST - Japan Standard Time, UTC/GMT +9 hours
+      tz_idenfitier="Etc/GMT-9"
+    ;;
+    "cst" | "sgt" )
+      # CST - China Standard Time, UTC/GMT +8 hours
+      # SGT - Singapore Time, UTC/GMT +8 hours
+      tz_idenfitier="Etc/GMT-8"
+    ;;
+    "ist" )
+      # IST - India Standard Time, UTC/GMT +5:30 hours
+      tz_idenfitier="Asia/Kolkata"
+    ;;
+    "cest" )
+      # CEST - Central European Summer Time, UTC/GMT +2 hours (between Mar 26 and Oct 29)
+      tz_idenfitier="Etc/GMT-2"
+    ;;
+    "cet" | "bsm" )
+      # CET - Central European Time, UTC/GMT +1 hour (between Oct 29 and Mar 26)
+      # BSM - British Summer Time, UTC/GMT +1 hour (between Mar 26 and Oct 29)
+      tz_idenfitier="Etc/GMT-1"
+    ;;
+    "gmt" )
+      # GMT - Greenwich Mean Time, UTC/GMT no offset (between Oct 29 and Mar 26)
+      tz_idenfitier="Etc/GMT"
+    ;;
+    "brst" )
+      # BRST - Brasilia Summer Time, UTC/GMT -2 hours (Oct 14 to Feb 18)
+      tz_idenfitier="Etc/GMT+2"
+    ;;
+    "brt" )
+      # BRT- Brasilia Time, UTC/GMT -3 hours (from Feb 18 to Oct 14)
+      tz_idenfitier="Etc/GMT+3"
+    ;;
+    "edt" )
+      # EDT	- Eastern Daylight Time, UTC/GMT -4 hours (from Mar 12 to Nov 5)
+      tz_idenfitier="Etc/GMT+4"
+    ;;
+    "cdt" | "est" )
+      # CDT - Central Daylight Time, UTC/GMT -5 hours (from Mar 12 to Nov 5)
+      # EST - Eastern Standard Time, UTC/GMT -5 hours (from Nov 5 to Mar 12)
+      tz_idenfitier="Etc/GMT+5"
+    ;;
+    "ct" )
+      # CT - Central Standard Time, UTC/GMT -6 hours (from Nov 5 to Mar 12)
+      tz_idenfitier="Etc/GMT+6"
+    ;;
+    "PDT" )
+      # PDT- Pacific Daylight Time, UTC/GMT -7 hours (from Mar 12 to Nov 5)
+      tz_idenfitier="Etc/GMT+7"
+    ;;
+    "PST" )
+      # PST - Pacific Standard Time, UTC/GMT -8 hours (from Nov 5 to Mar 12)
+      tz_idenfitier="Etc/GMT+8"
+    ;;
+  esac
+
+  echo "$tz_idenfitier"
+}
+# [END get_tz_identifier]
 
 
 
@@ -564,108 +589,7 @@ function snapshot_instances () {
 
 # [START action_on_instance]
 function action_on_instance () {
-  local city="$1"
-  case "$city" in
-    "singapore" )
-            if [[ "10#${utc_hour}" -eq "10#00" ]]; then
-              action="start"
-            elif [[ "10#${utc_hour}" -eq "10#13" ]]; then
-              action="stop"
-            else
-              action="none"
-            fi
-    ;;
 
-    "belgium"|"frankfurt")
-              if [[ "10#${utc_hour}" -eq "10#04" ]]; then
-                action="start"
-              elif [[ "10#${utc_hour}" -eq "10#16" ]]; then
-                action="stop"
-              else
-                action="none"
-              fi
-    ;;
-
-    "london" )
-            if [[ "10#${utc_hour}" -eq "10#05" ]]; then
-              action="start";
-            elif [[ "10#${utc_hour}" -eq "10#17" ]]; then
-              action="stop" ;
-            else action="none" ; fi
-    ;;
-
-    "s_carolina" )
-            if [[ "10#${utc_hour}" -eq "10#10" ]]; then
-              action="start"
-            elif [[ "10#${utc_hour}" -eq "10#22" ]]; then
-              action="stop"
-            else
-              action="none"
-            fi
-    ;;
-
-    "n_virginia" )
-              if [[ "10#${utc_hour}" -eq "10#10" ]]; then
-                action="start"
-              elif [[ "10#${utc_hour}" -eq "10#22" ]]; then
-                action="stop"
-              else
-                action="none"
-              fi
-    ;;
-
-    "iowa" )
-              if [[ "10#${utc_hour}" -eq "10#11" ]]; then
-                action="start"
-                action="none"
-              elif [[ "10#${utc_hour}" -eq "10#23" ]]; then
-                action="stop"
-                action="none"
-              else
-                action="none"
-              fi
-    ;;
-
-    "oregon" )
-              if [[ "10#${utc_hour}" -eq "10#13" ]]; then
-                action="start"
-              elif [[ "10#${utc_hour}" -eq "10#01" ]]; then
-                action="stop"
-              else
-                action="none"
-              fi
-    ;;
-
-    "sydney" )
-              if [[ "10#${utc_hour}" -eq "10#20" ]]; then
-                action="start"
-              elif [[ "10#${utc_hour}" -eq "10#08" ]]; then
-                action="stop"
-              else
-                action="none"
-              fi
-    ;;
-
-    "tokyo" )
-              if [[ "10#${utc_hour}" -eq "10#21" ]]; then
-                action="start"
-              elif [[ "10#${utc_hour}" -eq "10#09" ]]; then
-                action="stop"
-              else
-                action="none"
-              fi
-    ;;
-
-    "taiwan" )
-              if [[ "10#${utc_hour}" -eq "10#22" ]]; then
-                action="start"
-              elif [[ "10#${utc_hour}" -eq "10#10" ]]; then
-                action="stop"
-              else
-                action="none"
-              fi
-    ;;
-  esac
 }
 # [END action_on_instance]
 
