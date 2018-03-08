@@ -46,10 +46,10 @@ default_time_zone="est"
 valid_time_zones=("aedt" "aest" "jst" "cst" "sgt" "ist" "cest" "cet" "bsm" "gmt" "brst" "brt" "edt" "cdt" "est" "ct" "pdt" "pst")
 valid_days=("mon" "tue" "wed" "thu" "fri" "sat" "sun" "all" "weekdays" "weekends")
 
+
 # [MAIN start]
 function main() {
   make_directories
-  get_current_time
 
   for project in "${projects[@]}"; do
     get_current_instances "$project"
@@ -62,56 +62,15 @@ function main() {
 # [START make_directories]
 function make_directories () {
 
-if [ ! -d "environments" ]; then
-  mkdir environments
-fi
+  if [ ! -d "environments" ]; then
+    mkdir environments
+  fi
 
-if [ ! -d "logs" ]; then
-  mkdir logs
-fi
+  if [ ! -d "logs" ]; then
+    mkdir logs
+  fi
 }
 # [END make_directories]
-
-
-# [START get_current_time]
-function get_current_time () {
-    # date +"[option]"
-    # [option]  result
-    # %T     time; same as %H:%M:%S
-    # %H     hour (00..23)
-    # %w     day of week (0..6); 0 is Sunday
-    # %u     day of week (1..7); 1 is Monday
-    local utc_week_day_num=`date -u +"%u"`  # get the day of the week (in UTC) Monday is 1
-
-    case $utc_week_day_num in
-      1)
-        utc_week_day="mon"
-      ;;
-      2)
-        utc_week_day="tue"
-      ;;
-      3)
-        utc_week_day="wed"
-      ;;
-      4)
-        utc_week_day="thu"
-      ;;
-      5)
-        utc_week_day="fri"
-      ;;
-      6)
-        utc_week_day="sat"
-      ;;
-      7)
-        utc_week_day="sun"
-      ;;
-    esac
-
-    local utc_hour=`date -u +"%H"`  # get the current hour (in UTC)
-    local time_stamp=`date -u +"%m.%d.%Y-%H%M%S"`
-}
-# [END get_current_time]
-
 
 
 # [START remove_exceptions]
@@ -119,11 +78,10 @@ function remove_exceptions () {
   # delete exceptions using sed
   # for exception in ${exceptions[@]}; do echo ${exception}; sed -i -e "/${exception}/d" environments/gcp_instances_list.txt; done
   for exception in "${exceptions[@]}"; do
-    sed -i -e "/${exception}/d" environments/gcp_instances_list.txt;
+    sed -i -e "/${exception}/d" environments/gcp_instances_list.txt
   done
 }
 # [END remove_exceptions]
-
 
 
 # [START create_instances_array]
@@ -137,7 +95,6 @@ function create_instances_array () {
 # [END create_instances_array]
 
 
-
 # [START get_current_instances]
 function get_current_instances () {
 	local project=$1
@@ -149,7 +106,6 @@ function get_current_instances () {
   echo "${instances_array[@]}"
 }
 # [END get_current_instances]
-
 
 
 # [START get_scheduler_label]
@@ -442,14 +398,24 @@ function get_instance_status () {
 # [END get_instance_status]
 
 
+# [START get_instance_zone]
+function get_instance_zone () {
+  local instance_name=$1
+  local instance_zone=$(awk -v pat="$instance_name " '$0 ~ pat {print $2}' environments/gcp_instances_list.txt)
+  echo "$instance_zone"
+}
+# [END get_instance_zone]
+
+
 # [START get_zone_time]
 function get_zone_time () {
   local instance_zone="$1"
-  local time_format="%H%M" # no space between H and M, e.g. 4pm == 1600
+  local time_format="%H%M" # e.g. "1600"
   local TZ
 
   TZ=$(get_tz_identifier "$instance_zone")
   zone_time=($(TZ=$TZ date +"$time_format"))
+  echo "${zone_time[@]}"
 }
 # [END get_zone_time]
 
@@ -457,13 +423,15 @@ function get_zone_time () {
 # [START get_zone_date]
 function get_zone_date () {
   local instance_zone="$1"
-  local date_format="%m %d %y" # space between Month, Day, Year, e.g. 03 08 18
+  local date_format="%m %d %Y" # e.g. "03 08 2018"
   local TZ
 
   TZ=$(get_tz_identifier "$instance_zone")
   zone_date=($(TZ=$TZ date +"$date_format"))
+  echo "${zone_date[@]}"
 }
 # [END zone_date]
+
 
 # [START get_tz_identifier]
 function get_tz_identifier () {
@@ -541,7 +509,6 @@ function get_tz_identifier () {
 # [END get_tz_identifier]
 
 
-
 # [START stop_instances]
 function stop_instances () {
   local instance_name="$1"
@@ -550,7 +517,6 @@ function stop_instances () {
   gcloud compute instances stop "$instance_name" --zone "$instance_zone" --project "$instance_project" >> "logs/gpc_instance_stop_$time_stamp.log"
 }
 # [END stop_instances]
-
 
 
 # [START start_instances]
@@ -563,7 +529,6 @@ function start_instances () {
 # [END start_instances]
 
 
-
 # [START delete_instances]
 function delete_instances () {
   local instance_name="$1"
@@ -572,7 +537,6 @@ function delete_instances () {
   gcloud compute instances delete "$instance_name" --zone "$instance_zone" --project "$instance_project" >> "logs/gpc_instance_delete_$time_stamp.log"
 }
 # [END delete_instances]
-
 
 
 # [START snapshot_instances]
@@ -586,28 +550,23 @@ function snapshot_instances () {
 # [END snapshot_instances]
 
 
-
-# [START action_on_instance]
-function action_on_instance () {
-
-}
-# [END action_on_instance]
-
-
-
 # [START instances_control]
 function instances_control () {
 	local project="$1"
   instances_array=($(get_current_instances $project))
-  # loop through instances to start or stop
 
+  # loop through instances to start or stop
   for instance in "${instances_array[@]}"; do
     local instance_name="$instance"
-    echo "Instance: $instance_name"
+    echo "instance: $instance_name"
 
     # get status of instance
     local status=$(get_instance_status "$instance_name")
-    echo "Status: $status"
+    echo "status: $status"
+
+    # get zone of instance
+    local zone=$(get_instance_zone "$instance_name")
+    echo "zone: $zone"
 
     # get scheduler label of instance
     local scheduler_array=($(get_scheduler_label "$instance_name" "$zone" "$project"))
@@ -632,73 +591,46 @@ function instances_control () {
       echo "days: $days"
     fi
 
-    # get time of the instance
-    local instance_time=$(get_instance_time "$time_zone")
-    echo "Instance time: $instance_time"
-
-
     # get archive-date of instance
     local archive_array=($(get_archive_label "$instance_name" "$zone" "$project"))
-    echo "archive-date: ${archive_array[@]}"
+    echo "archive date: ${archive_array[@]}"
     if [[ "${#archive_array[@]}" -eq 3 ]]; then
       month="${archive_array[0]}"
-      echo "month: $month"
+      echo "archive month: $month"
       day="${archive_array[1]}"
-      echo "day: $day"
+      echo "archive day: $day"
       year="${archive_array[2]}"
-      echo "year: $year"
+      echo "archive year: $year"
     else
       month="${archive_array[0]}"
-      echo "month: $month"
+      echo "archive month: $month"
       day="${archive_array[0]}"
-      echo "day: $day"
+      echo "archive day: $day"
       year="${archive_array[0]}"
-      echo "year: $year"
+      echo "archive year: $year"
     fi
 
     # get date of the instance
-    local instance_date=$(get_instance_date "$time_zone")
-    echo "Instance date: $instance_time"
+    local instance_zone_date=$(get_zone_date "$time_zone")
+    echo "zone date: $instance_zone_date"
 
+    # get time of the instance
+    local instance_zone_time=$(get_zone_time "$time_zone")
+    echo "zone time: $instance_zone_time"
 
-    # action_on_instance function to see if instance should be started or stoppped
-    action_on_instance "$time_zone"
-    # echo "Action: $action"
-    # echo ""
+    # action_on_instance see if instance should be started or stoppped
+    # is start_time == zone_time
+    # is stop_time == zone_time
+    # is archive date == zone_date && zone_time == 0400
 
-    # make sure it"s not a weekend before starting or stopping
-    if [[ "$utc_week_day" != "sat" &&  "$utc_week_day" != "sun" ]] ; then
-      if [[ ${status} == "TERMINATED" && ${action} == "start" ]] ; then
-        echo "==============================" >> logs/gpc_instances_start-stop_$time_stamp.log
-        echo " Action: START instance" >> logs/gpc_instances_start-stop_$time_stamp.log
-        start_instances "$instance_name" "${zone}"
-        echo " Instance: $instance_name" >> logs/gpc_instances_start-stop_$time_stamp.log
-        echo " Zone: ${zone}" >> logs/gpc_instances_start-stop_$time_stamp.log
-        echo " Status: ${status}" >> logs/gpc_instances_start-stop_$time_stamp.log
-        echo "" >> logs/gpc_instances_start-stop_$time_stamp.log
+    # if [[ "$start_time" == "$instance_zone_time" ]]; then
+    # elif [[ "$stop_time" == "$instance_zone_time" ]]; then
+    # fi
+    #
+    # if [[ ${archive_array[@]} ==  ]]; then
+    #   #statements
+    # fi
 
-      elif [[ ${status} == "RUNNING" && ${action} == "stop" ]]; then
-        echo "==============================" >> logs/gpc_instances_start-stop_$time_stamp.log
-        echo " Action: STOP instance" >> logs/gpc_instances_start-stop_$time_stamp.log
-        stop_instances "$instance_name" "${zone}"
-        echo " Instance: $instance_name" >> logs/gpc_instances_start-stop_$time_stamp.log
-        echo " Zone: ${zone}" >> logs/gpc_instances_start-stop_$time_stamp.log
-        echo " Status: ${status}" >> logs/gpc_instances_start-stop_$time_stamp.log
-        echo "" >> logs/gpc_instances_start-stop_$time_stamp.log
-
-      else
-        echo "==============================" >> logs/gpc_instances_start-stop_$time_stamp.log
-        echo " Action: none" >> logs/gpc_instances_start-stop_$time_stamp.log
-        echo " Instance: $instance_name" >> logs/gpc_instances_start-stop_$time_stamp.log
-        echo " Zone: ${zone}" >> logs/gpc_instances_start-stop_$time_stamp.log
-        echo " Status: ${status}" >> logs/gpc_instances_start-stop_$time_stamp.log
-        echo "" >> logs/gpc_instances_start-stop_$time_stamp.log
-      fi
-    else
-      echo "It's $utc_week_day, crontab takes weekends off."
-      echo "Instances will keep their current state"
-      exit 0
-    fi
   done
 }
 # [END instances_control]
