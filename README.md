@@ -24,7 +24,8 @@ The script pulls the current instances from GCP under the desired projects. Depe
 
 ## Setup
 This script is setup as a cronjob to be run every minute on an AWS t2.micro (free tier). <br />
-**\* * * * *    ec2-user /home/ec2-user/talend-gpc-scheduler/gcp_instances_start-stop.sh** <br />
+<br />
+**\* * * * *      ec2-user      ~/gcp_instances_start-stop-v2.sh** <br />
 <br />
 
 ## Zones
