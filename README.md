@@ -16,42 +16,34 @@ The environment that we are currently using is an AWS t2.micro (free tier).
 ## Zones
 **GCP Zones, Cities, UTC start & stop times**
 
-| **Zones** |	**GCP city**  |	**Talend city**	| **on (UTC)** | **off (UTC)** |
---------------------------|---------------|-------------|---------|----------|
-| asia-southeast1-b	      |	singapore	    |	bangalore	  |	0030	  | 1230     |
-| asia-southeast1-a	      |	singapore	    |	bangalore	  |	0030	  |	1230     |
-| europe-west1-d	        |	belgium		    |	suresnes	  |	0400	  |	1600     |
-| europe-west1-c		      |	belgium		    |	suresnes	  |	0400	  |	1600     |
-| europe-west1-b		      |	belgium		    |	suresnes	  |	0400	  |	1600     |
-| europe-west3-b		      |	frankfurt	    |	bonn		    |	0400	  |	1600	   |
-| europe-west3-c		      |	frankfurt	    |	bonn		    |	0400	  |	1600     |
-| europe-west3-a		      |	frankfurt	    |	bonn		    |	0400	  |	1600     |
-| europe-west2-c		      |	london		    |	london		  |	0500	  |	1700     |
-| europe-west2-a		      |	london		    |	london		  |	0500	  |	1700     |
-| europe-west2-b	       	|	london		    |	london		  |	0500	  |	1700     |
-| us-east1-d		          |	s_carolina	  |	atlanta	    |	1000	  |	2200     |
-| us-east1-c		          |	s_carolina	  |	atlanta	    |	1000	  |	2200     |
-| us-east1-b 	   	        |	s_carolina	  |	atlanta	    |	1000	  |	2200     |
-| us-east4-b		          |	n_virginia	  |	atlanta	    |	1000	  |	2200     |
-| us-east4-a		          |	n_virginia	  |	atlanta	    |	1000	  |	2200 	   |
-| us-east4-c		          |	n_virginia	  |	atlanta	    |	1000	  |	2200  	 |		
-| us-central1-c		        |	iowa          |	           	|	1100	  |	2300     |
-| us-central1-a		        |	iowa		      |			        |	1100	  |	2300     |
-| us-central1-f		        |	iowa		      |			        |	1100	  |	2300     |
-| us-central1-b		        |	iowa		      |		          |	1100	  |	2300  	 |
-| us-west1-b		          |	oregon		    |	irvine		  |	1300	  |	0100  	 |
-| us-west1-a		          | oregon		    |	irvine		  |	1300	  |	0100     |
-| us-west1-c		          | oregon		    |	irvine		  |	1300	  |	0100     |
-| australia-southeast1-a	|	sydney		    |	sydney      |	2000	  |	0800     |
-| australia-southeast1-c	|	sydney		    |	sydney	    |	2000	  |	0800	   |
-| australia-southeast1-b	|	sydney		    | sydney      |	2000	  |	0800	   |
-| asia-northeast1-c	      |	tokyo		      |	tokyo       |	2100	  |	0900	   |
-| asia-northeast1-a	      |	tokyo		      |	tokyo       |	2100	  |	0900	   |
-| asia-northeast1-b	      |	tokyo		      |	tokyo       |	2100	  |	0900	   |
-| asia-east1-a		        | taiwan		    |	beijing     |	2200	  |	1000	   |
-| asia-east1-c		        | taiwan		    |	beijing     |	2200	  |	1000	   |
-| asia-east1-b          	| taiwan		    |	beijing     |	2200	  |	1000	   |
+In accordance with the IANA, we will use the following TZ to
+start, stop and remove instances:
+https://www.iana.org/time-zones
+https://en.wikipedia.org/wiki/List_of_tz_database_time_zones
 
+All of the the following time zones can be used in the scheduler:
+
+ **Identifier** | **Meaning** | **Time offset from UTC**  
+----------------|-------------|----------------
+AEDT | Australian Eastern Daylight Time | UTC/GMT +11 hours (between Oct 1 and Apr 2)
+AEST | Australian Eastern Standard Time | UTC/GMT +10 hours (between Apr 2 and Oct 1)
+JST | Japan Standard Time | UTC/GMT +9 hours
+CST | China Standard Time | UTC/GMT +8 hours
+SGT | Singapore Time | UTC/GMT +8 hours
+IST | India Standard Time | UTC/GMT +5:30 hours
+CEST | Central European Summer Time | UTC/GMT +2 hours (between Mar 26 and Oct 29)
+CET | Central European Time | UTC/GMT +1 hour (between Oct 29 and Mar 26)
+BSM | British Summer Time | UTC/GMT +1 hour (between Mar 26 and Oct 29)
+GMT | Greenwich Mean Time | UTC/GMT no offset (between Oct 29 and Mar 26)
+BRST | Brasilia Summer Time | UTC/GMT -2 hours (Oct 14 to Feb 18)
+BRT | Brasilia Time | UTC/GMT -3 hours (from Feb 18 to Oct 14)
+EDT | Eastern Daylight Time | UTC/GMT -4 hours (from Mar 12 to Nov 5)
+CDT | Central Daylight Time | UTC/GMT -5 hours (from Mar 12 to Nov 5)
+EST | Eastern Standard Time | UTC/GMT -5 hours (from Nov 5 to Mar 12)
+CT | Central Standard Time | UTC/GMT -6 hours (from Nov 5 to Mar 12)
+PDT | Pacific Daylight Time | UTC/GMT -7 hours (from Mar 12 to Nov 5)
+PST | Pacific Standard Time | UTC/GMT -8 hours (from Nov 5 to Mar 12)
+-----------------|-----------------
 
 ## Contributors
 
