@@ -2,12 +2,13 @@
 
 ## Summary
 Starts, stops, and deletes GCP instances based on their scheduler and archive-date labels: <br />
+
 Label         |   Key
 ----------------- | -------------
 **scheduler:**    |   start_time-stop_time-tz_identifier-days_of_the_week
 **archive-date:** |   mm-dd-yyyy
 
-The following values are acceptable for the scheduler key: </br>
+The following values are acceptable for the scheduler key: <br />
 Key sections | Values   
 -------------| -------------
 start_time       | 0000 to 2359
@@ -26,15 +27,15 @@ This script is setup as a cronjob to be run every minute on an AWS t2.micro (fre
 <br />
 
 ## Zones
-**GCP Zones, Cities, start & stop times** </br>
+**GCP Zones, Cities, start & stop times** <br />
 In accordance with the IANA, we will use the following TZ to
-start, stop and remove instances: </br>
- </br>
-https://www.iana.org/time-zones  </br>
-https://en.wikipedia.org/wiki/List_of_tz_database_time_zones  </br>
-</br>
+start, stop and remove instances: <br />
+<br />
+https://www.iana.org/time-zones  <br />
+https://en.wikipedia.org/wiki/List_of_tz_database_time_zones  <br />
+<br />
 Only the following TZ identifiers can be used in the scheduler:
-</br>
+<br />
 TZ Identifier | Meaning | Time offset from UTC  
 --------------- | ----------- | ---------------
 AEDT | Australian Eastern Daylight Time | UTC/GMT +11 hours (between Oct 1 and Apr 2)
@@ -56,6 +57,6 @@ CT | Central Standard Time | UTC/GMT -6 hours (from Nov 5 to Mar 12)
 PDT | Pacific Daylight Time | UTC/GMT -7 hours (from Mar 12 to Nov 5)
 PST | Pacific Standard Time | UTC/GMT -8 hours (from Nov 5 to Mar 12)
 -----------------|-----------------
- </br>
+<br />
 ## Contributors
 @fgalindo7 <br />
