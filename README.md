@@ -59,4 +59,5 @@ PDT | Pacific Daylight Time | UTC/GMT -7 hours (from Mar 12 to Nov 5)
 PST | Pacific Standard Time | UTC/GMT -8 hours (from Nov 5 to Mar 12)
 
 ## Contributors
+@franciscogd
 @fgalindo7
