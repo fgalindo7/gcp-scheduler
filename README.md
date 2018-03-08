@@ -36,7 +36,7 @@ https://www.iana.org/time-zones  <br />
 https://en.wikipedia.org/wiki/List_of_tz_database_time_zones  <br />
 <br />
 Only the following TZ identifiers can be used in the scheduler:
-<br />
+
 TZ Identifier | Meaning | Time offset from UTC  
 --------------- | ----------- | ---------------
 AEDT | Australian Eastern Daylight Time | UTC/GMT +11 hours (between Oct 1 and Apr 2)
@@ -57,7 +57,7 @@ EST | Eastern Standard Time | UTC/GMT -5 hours (from Nov 5 to Mar 12)
 CT | Central Standard Time | UTC/GMT -6 hours (from Nov 5 to Mar 12)
 PDT | Pacific Daylight Time | UTC/GMT -7 hours (from Mar 12 to Nov 5)
 PST | Pacific Standard Time | UTC/GMT -8 hours (from Nov 5 to Mar 12)
------------------|-----------------
+
 <br />
 ## Contributors
 @fgalindo7 <br />
