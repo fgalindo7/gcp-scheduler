@@ -10,11 +10,12 @@ Starts, stops, and deletes GCP instances based on their scheduler and archive-da
 <br />
 The following values are acceptable for the scheduler key: </br>
 | **key**           | **Values**   |
-|-------------------|--------------|
+--------------------|--------------|
 | start_time        | 0000 to 2359 |
 | stop_time         | 0000 to 2359 |
 | tz_identifier     | *see table below* |
 | days_of_the_week  | mon, tue, wed, thu, fri, sat, sun, all, weekdays, weekends |
+
 **Note**: days of the week combinations can be made if separated by underscores.
 
 <br />
