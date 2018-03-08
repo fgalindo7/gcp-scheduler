@@ -8,9 +8,10 @@ Label         |   Key
 **scheduler:**    |   start_time-stop_time-tz_identifier-days_of_the_week
 **archive-date:** |   mm-dd-yyyy
 
-The following values are acceptable for the scheduler key: <br />
+The following values are acceptable for the scheduler key sections: <br />
+
 Key sections | Values   
--------------| -------------
+------------ | -------------
 start_time       | 0000 to 2359
 stop_time        | 0000 to 2359
 tz_identifier    | *see table below*
