@@ -38,7 +38,10 @@ source ~/.bash_profile
 #projects=("css-us" "css-apac" "css-emea" "probable-sector-147517" "enablement-183818")
 projects=("scheduler-test-181019")
 scheduler_label="scheduler"
+scheduler_label_ifs="-"
+weekdays_ifs="_"
 archive_label="archive-date"
+archive_label_ifs="-"
 exceptions=("devops" "support-docker-registry")
 default_start_time="none"
 default_stop_time="1800"
@@ -108,44 +111,6 @@ function get_current_instances () {
 # [END get_current_instances]
 
 
-# [START get_scheduler_label]
-function get_scheduler_label () {
-  #get_scheduler_label "testing-vagrant" "us-central1-f" "scheduler-test-181019"
-  local instance_name="$1" # instance_name="testing-vagrant"
-  local instance_zone="$2" # instance_zone="us-central1-f"
-	local instance_project="$3" # instance_project="scheduler-test-181019"
-
-  local scheduler_label_key_raw=$(gcloud compute instances describe "$instance_name" --zone "$instance_zone" --project "$instance_project" | grep "$scheduler_label: ")
-  # scheduler_label_key_raw=$(gcloud compute instances describe $instance_name --zone "$instance_zone" --project "$instance_project" | grep "$scheduler_label: ")
-  # echo $scheduler_label_key_raw
-  if [[ -z "$scheduler_label_key_raw" ]]; then
-    local scheduler_key="none"
-  else
-    local scheduler_label_key_no_spaces=$(echo "${scheduler_label_key_raw}" | tr -d "[:space:]") # remove spaces
-    # scheduler_label_key=$(echo "${scheduler_label_key_raw}" | tr -d "[:space:]"); echo $scheduler_label_key
-    local scheduler_key=$(echo "${scheduler_label_key_no_spaces}" | sed -e "s/${scheduler_label}://") # remove scheduler label and column, "scheduler:"
-    #scheduler_key=$(echo "${scheduler_label_key}" | sed -e "s/${scheduler_label}://");
-    # echo "$scheduler_key"
-  fi
-
-  # parse scheduler key into array with individual fields
-  local scheduler_key_array
-  IFS="-" read -r -a scheduler_key_array <<<"$scheduler_key"
-  # echo "${scheduler_key_array[@]}"
-
-  # Call check_scheduler_key to confirm a valid label key
-  local is_scheduler_key_valid=$(check_scheduler_key_array scheduler_key_array[@])
-  # echo "$is_scheduler_key_valid"
-
-  if [[ $is_scheduler_key_valid == true ]]; then
-    echo "${scheduler_key_array[@]}"
-  else
-    echo "none"
-  fi
-}
-# [END get_scheduler_label]
-
-
 # [START check_scheduler_key_array]
 function check_scheduler_key_array () {
   local result
@@ -174,13 +139,13 @@ function check_scheduler_key_array () {
   # check2: is str1 an integer between 0000-2359 or "default" or "none"?
   check2=$(check_time $str1)
   if [[ "$check3" ]]; then
-    local start_time=$(remove_leading_zeros $str1)
+    start_time=$(remove_leading_zeros $str1)
   fi
 
   # check3: is str2 an integer between 0000-2359 or "default" or "none"?
   check3=$(check_time $str2)
   if [[ "$check3" ]]; then
-    local stop_time=$(remove_leading_zeros $str2)
+    stop_time=$(remove_leading_zeros $str2)
   fi
 
   # check4: valid time_zone
@@ -188,7 +153,10 @@ function check_scheduler_key_array () {
   #echo "$check4"
 
   # check5: valid day selection
-  check5=$(is_contained "$str4" "${valid_days[@]}")
+  days_of_the_week=($(parse_string_into_array "-" "$str4"))
+  # echo "$days_of_the_week"
+
+  check5=$(check_days_key_array "${days_of_the_week[@]}")
 
   if [[ "$check1" == true ]] && [[ "$check2" == true ]] && [[ "$check3" == true ]] && [[ "$check4" == true ]] && [[ "$check5" == true ]]; then
     result="true"
@@ -199,6 +167,122 @@ function check_scheduler_key_array () {
   echo "$result"
 }
 # [END check_scheduler_key_array]
+
+
+# [START check_days_key_array]
+function check_days_key_array () {
+  local result="false"
+  local days_array=("${!1}")
+
+  if [[ "${#days_array[@]}" -ge 0 ]]; then
+    if [[ "${days_array[@]}" == "weekdays" ]] || [[ "${days_array[@]}" == "weekend" ]] || [[ "${days_array[@]}" == "weekends" ]] || [[ "${days_array[@]}" == "all" ]]; then
+      result="true"
+    else
+      for day in "${days_array[@]}"; do
+        result=$(is_contained "$day" "${valid_days[@]}")
+        result="true"
+      done
+    fi
+  fi
+  echo "$result"
+}
+# [END check_days_key_array]
+
+
+# [START check_archive_key_array]
+function check_archive_key_array () {
+  local result
+  local keys_array=("${!1}")
+  local check1=true # check for valid length of array (len(array) == 3)
+  local check2=true # check for valid day
+  local check3=true # check for valid month
+  local check4=true # check for valid year
+  local archive_day
+  local archive_month
+  local archive_year
+
+  # check1: length of array is 3
+  if [[ "${#keys_array[@]}" == 3 ]]; then
+    local str1="${keys_array[0]}"
+    local str2="${keys_array[1]}"
+    local str3="${keys_array[2]}"
+  else
+    check1=false
+  fi
+
+  # check2: str1 is an integer between 1 and 12
+  check2=$(check_day $str1)
+  if [[ "$check2" ]]; then
+    local archive_day=$(remove_leading_zeros $str1)
+  fi
+
+  # check3: str2 is an integer between 1 and 31
+  check3=$(check_month $str2)
+  if [[ "$check3" ]]; then
+    local archive_month=$(remove_leading_zeros $str2)
+  fi
+
+  # check4: str3 is an integer between 2018 and 2999
+  check4=$(check_year $str3)
+  if [[ "$check4" ]]; then
+    local archive_year=$(remove_leading_zeros $str3)
+  fi
+
+  if [[ "$check1" == true ]] && [[ "$check2" == true ]] && [[ "$check3" == true ]] && [[ "$check4" == true ]]; then
+    result="true"
+  else
+    result="false"
+  fi
+
+  echo "$result"
+}
+# [END check_archive_key_array]
+
+
+# [START get_label_values]
+function get_label_values () {
+  local instance_name="$1" # instance_name="testing-vagrant"
+  local instance_zone="$2" # instance_zone="us-central1-f"
+	local instance_project="$3" # instance_project="scheduler-test-181019"
+  local label="$4"
+  local label_ifs="$5"
+
+  local label_key_raw=$(gcloud compute instances describe "$instance_name" --zone "$instance_zone" --project "$instance_project" | grep "$label: ")
+  # echo $label_key_raw
+
+  if [[ -z $label_key_raw ]]; then
+    local label_key="none"
+  else
+    local label_key_no_spaces=$(echo "${label_key_raw}" | tr -d "[:space:]") # remove white spaces
+    local label_key=$(echo "${label_key_no_spaces}" | sed -e "s/${label}://") # remove archive label and column, "archive:"
+    # echo "$label_key"
+  fi
+
+  # parse archive key into array with individual fields
+  local label_key_array
+  label_key_array=($(parse_string_into_array "$label_ifs" "$label_key"))
+  # echo "${label_key_array[@]}"
+
+  case "$label" in
+      "$archive_label" )
+      # Call check_archive_key_array function to confirm a valid keys
+      local is_label_key_valid=$(check_archive_key_array label_key_array[@])
+      # echo "$is_label_key_valid"
+      ;;
+      "$scheduler_label" )
+      # Call check_scheduler_key_array function to confirm a valid keys
+      local is_label_key_valid=$(check_scheduler_key_array label_key_array[@])
+      # echo "$is_label_key_valid"
+      ;;
+  esac
+
+  if [[ $is_label_key_valid == true ]]; then
+    echo "${label_key_array[@]}"
+  else
+    echo "none"
+  fi
+}
+# [END get_label_values]
 
 
 # [START check_day]
@@ -239,7 +323,7 @@ function check_year () {
   local reg_ex='^[0-9]+$'
   local year=$1
 
-  if [[ $year =~ $reg_ex ]] && [[ $year -ge 2018 ]] && [[ $year -le 2999 ]]; then
+  if [[ $year =~ $reg_ex ]] && [[ $year -ge 2000 ]] && [[ $year -le 2999 ]]; then
     result="true"
   else
     result="false"
@@ -301,92 +385,17 @@ function is_contained () {
 # [END is_contained]
 
 
-# [START get_archive_label]
-function get_archive_label () {
-  #get_archive_label "testing-vagrant" "us-central1-f" "scheduler-test-181019"
-  local instance_name="$1" # instance_name="testing-vagrant"
-  local instance_zone="$2" # instance_zone="us-central1-f"
-	local instance_project="$3" # instance_project="scheduler-test-181019"
+# [START parse_string_into_array]
+function parse_string_into_array () {
+  local custom_ifs="$1"
+  local string_to_parse="$2"
 
-  local archive_label_key_raw=$(gcloud compute instances describe "$instance_name" --zone "$instance_zone" --project "$instance_project" | grep "$archive_label: ")
-  # archive_label_key_raw=$(gcloud compute instances describe "$instance_name" --zone "$instance_zone" --project "$instance_project" | grep "$archive_label: "); echo $archive_label_key_raw
-  # echo $archive_label_key_raw
-  if [[ -z $archive_label_key_raw ]]; then
-    local archive_key="none"
-  else
-    local archive_label_key=$(echo "${archive_label_key_raw}" | tr -d "[:space:]") # remove white spaces
-    # archive_label_key=$(echo "${archive_label_key_raw}" | tr -d "[:space:]"); echo $archive_label_key
-    local archive_key=$(echo "${archive_label_key}" | sed -e "s/${archive_label}://") # remove archive label and column, "archive:"
-    # archive_key=$(echo "${archive_label_key}" | sed -e "s/${archive_label}://"); echo $archive_key
-    # echo "$archive_key"
-  fi
+  local scheduler_key_array
+  IFS="$custom_ifs" read -r -a parsed_array <<<"$string_to_parse"
 
-  # parse archive key into array with individual fields
-  local archive_key_array
-  IFS="-" read -r -a archive_key_array <<<"$archive_key"
-  # echo "${archive_key_array[@]}"
-
-  # Call check_scheduler_key to confirm a valid label key
-  local is_archive_key_valid=$(check_archive_key_array archive_key_array[@])
-  # echo "$is_scheduler_key_valid"
-
-  if [[ $is_archive_key_valid == true ]]; then
-    echo "${archive_key_array[@]}"
-  else
-    echo "none"
-  fi
+  echo "${parsed_array[@]}"
 }
-# [END get_archive_label]
-
-
-# # [START check_archive_key_array]
-function check_archive_key_array () {
-  local result
-  local keys_array=("${!1}")
-  local check1=true # check for valid length of array (len(array) == 3)
-  local check2=true # check for valid day
-  local check3=true # check for valid month
-  local check4=true # check for valid year
-  local archive_day
-  local archive_month
-  local archive_year
-
-  # check1: length of array is 3
-  if [[ "${#keys_array[@]}" == 3 ]]; then
-    local str1="${keys_array[0]}"
-    local str2="${keys_array[1]}"
-    local str3="${keys_array[2]}"
-  else
-    check1=false
-  fi
-
-  # check2: str1 is an integer between 1 and 12
-  check2=$(check_day $str1)
-  if [[ "$check2" ]]; then
-    local archive_day=$(remove_leading_zeros $str1)
-  fi
-
-  # check3: str2 is an integer between 1 and 31
-  check3=$(check_month $str2)
-  if [[ "$check3" ]]; then
-    local archive_month=$(remove_leading_zeros $str2)
-  fi
-
-  # check4: str3 is an integer between 2018 and 2999
-  check4=$(check_year $str3)
-  if [[ "$check4" ]]; then
-    local archive_year=$(remove_leading_zeros $str3)
-  fi
-
-  if [[ "$check1" == true ]] && [[ "$check2" == true ]] && [[ "$check3" == true ]] && [[ "$check4" == true ]]; then
-    result="true"
-  else
-    result="false"
-  fi
-
-  echo "$result"
-}
-# # [END check_archive_key_array]
+# [END parse_string_into_array]
 
 
 # [START get_instance_status]
@@ -418,6 +427,19 @@ function get_zone_time () {
   echo "${zone_time[@]}"
 }
 # [END get_zone_time]
+
+
+# [START get_zone_weekday]
+function get_zone_weekday () {
+  local instance_zone="$1"
+  local date_format="%a" # e.g. "Sat"
+  local TZ
+
+  TZ=$(get_tz_identifier "$instance_zone")
+  zone_weekday=$(TZ=$TZ date +"$date_format")
+  echo "$zone_weekday"
+}
+# [END zone_weekday]
 
 
 # [START get_zone_date]
@@ -557,6 +579,7 @@ function instances_control () {
 
   # loop through instances to start or stop
   for instance in "${instances_array[@]}"; do
+    echo ""
     local instance_name="$instance"
     echo "instance: $instance_name"
 
@@ -568,8 +591,8 @@ function instances_control () {
     local zone=$(get_instance_zone "$instance_name")
     echo "zone: $zone"
 
-    # get scheduler label of instance
-    local scheduler_array=($(get_scheduler_label "$instance_name" "$zone" "$project"))
+    # get scheduler label values of instance
+    local scheduler_array=($(get_label_values "$instance_name" "$zone" "$project" "$scheduler_label" "$scheduler_label_ifs"))
     echo "scheduler: ${scheduler_array[@]}"
     if [[ "${#scheduler_array[@]}" -eq 4 ]]; then
       start_time="${scheduler_array[0]}"
@@ -578,8 +601,8 @@ function instances_control () {
       echo "stop time: $stop_time"
       time_zone="${scheduler_array[2]}"
       echo "time zone: $time_zone"
-      days="${scheduler_array[3]}"
-      echo "days: $days"
+      days=($(parse_string_into_array "$weekdays_ifs" "${scheduler_array[3]}"))
+      echo "days: ${days[@]}"
     else
       start_time="${scheduler_array[0]}"
       echo "start time: $start_time"
@@ -591,8 +614,8 @@ function instances_control () {
       echo "days: $days"
     fi
 
-    # get archive-date of instance
-    local archive_array=($(get_archive_label "$instance_name" "$zone" "$project"))
+    # get archive-date label values of instance
+    local archive_array=($(get_label_values "$instance_name" "$zone" "$project" "$archive_label" "$archive_label_ifs"))
     echo "archive date: ${archive_array[@]}"
     if [[ "${#archive_array[@]}" -eq 3 ]]; then
       month="${archive_array[0]}"
@@ -610,18 +633,39 @@ function instances_control () {
       echo "archive year: $year"
     fi
 
-    # get date of the instance
+    # get date of the instance zone
     local instance_zone_date=$(get_zone_date "$time_zone")
     echo "zone date: $instance_zone_date"
 
-    # get time of the instance
+    # get day of the instance zone
+    local instance_zone_weekday=$(get_zone_weekday "$time_zone")
+    echo "zone day: $instance_zone_weekday"
+
+    # get time of the instance zone
     local instance_zone_time=$(get_zone_time "$time_zone")
     echo "zone time: $instance_zone_time"
 
+
     # action_on_instance see if instance should be started or stoppped
-    # is start_time == zone_time
-    # is stop_time == zone_time
-    # is archive date == zone_date && zone_time == 0400
+    # if days ==
+
+      # if start_time == 'none'
+      #     break
+      # elif start_time == 'default'
+      # elif start_time == zone_time
+      #   stop_instances "$instance"
+      # fi
+
+      # if stop_time == 'none'
+      #     break
+      # elif stop_time == 'default'
+      # elif stop_time == zone_time
+      # stop instance "$instance"
+      # fi
+
+
+    # if stop_time == zone_time and zone_weekday in day
+    # if archive date == zone_date && zone_time == 0400
 
     # if [[ "$start_time" == "$instance_zone_time" ]]; then
     # elif [[ "$stop_time" == "$instance_zone_time" ]]; then
