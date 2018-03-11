@@ -719,9 +719,11 @@ function instances_control () {
     elif [[ "$is_start_stop_today" ]]; then
       if [[ "$instance_zone_time" == "$instance_scheduler_start_time" ]]; then
         # start instance
+        start_instance "$instance" "$instance_zone" "$project"
         echo "instance $instance is starting now"
       elif [[ "$instance_zone_time" == "$instance_scheduler_stop_time" ]]; then
         # stop instance
+        stop_instance "$instance" "$instance_zone" "$project"
         echo "instance $instance is stoping now"
       fi
     fi
