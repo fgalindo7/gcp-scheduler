@@ -36,7 +36,7 @@ source ~/.bash_profile
 
 ## Global variables
 #projects=("css-us" "css-apac" "css-emea" "probable-sector-147517" "enablement-183818")
-projects=("css-us" "css-apac" "batch-volume-testing" "css-emea" "probable-sector-147517" "scheduler-test-181019" "enablement-183818")
+projects=("css-us" "css-apac" "css-emea" "probable-sector-147517" "batch-volume-testing" "enablement-183818")
 owner_label="owner"
 owner_label_ifs="-"
 email_time="1000" #10am
@@ -629,81 +629,78 @@ function instances_control () {
 
   # loop through instances to start/stop or to archive
   for instance in "${instances_array[@]}"; do
-    echo ""
+    # get instance name
     instance_name="$instance"
-    echo "instance: $instance_name"
-
     # get status of instance
     instance_status=$(get_instance_status "$instance_name")
-    echo "status: $instance_status"
-
     # get zone of instance
-    instance_zone=$(get_instance_zone "$instance_name")
-    echo "zone: $instance_zone"
-
+    instance_zone=$(get_instance_zone "$instance_name")#echo "zone: $instance_zone"
     # get instance value of the owner label
     instance_owner=$(get_label_values "$instance_name" "$instance_zone" "$project" "$owner_label" "$owner_label_ifs")
-    echo "owner: $instance_owner"
-
     # get instance values of the scheduler label
     scheduler_array=($(get_label_values "$instance_name" "$instance_zone" "$project" "$scheduler_label" "$scheduler_label_ifs"))
-    echo "scheduler values: ${scheduler_array[@]}"
+
     if [[ "${#scheduler_array[@]}" -eq 4 ]]; then
       instance_scheduler_start_time="${scheduler_array[0]}"
-      echo "start time: $instance_scheduler_start_time"
       instance_scheduler_stop_time="${scheduler_array[1]}"
-      echo "stop time: $instance_scheduler_stop_time"
       instance_scheduler_time_zone="${scheduler_array[2]}"
-      echo "time zone: $instance_scheduler_time_zone"
       instance_scheduler_days=($(parse_string_into_array "$weekdays_ifs" "${scheduler_array[3]}"))
-      echo "days: ${instance_scheduler_days[@]}"
     else
       instance_scheduler_start_time="${scheduler_array[0]}"
-      echo "start time: $instance_scheduler_start_time"
       instance_scheduler_stop_time="${scheduler_array[0]}"
-      echo "stop time: $instance_scheduler_stop_time"
       instance_scheduler_time_zone="${scheduler_array[0]}"
-      echo "time zone: $instance_scheduler_time_zone"
       instance_scheduler_days="${scheduler_array[0]}"
-      echo "days: ${instance_scheduler_days[@]}"
     fi
 
     # get instance values of the archive-date label
     archive_date_array=($(get_label_values "$instance_name" "$instance_zone" "$project" "$archive_label" "$archive_label_ifs"))
     instance_archive_date=$(get_label_values "$instance_name" "$instance_zone" "$project" "$archive_label" "$archive_label_ifs")
-    echo "archive-date values: $instance_archive_date"
     if [[ "${#archive_date_array[@]}" -eq 3 ]]; then
       instance_archive_month="${archive_date_array[0]}"
-      echo "archive month: $instance_archive_month"
       instance_archive_day="${archive_date_array[1]}"
-      echo "archive day: $instance_archive_day"
       instance_archive_year="${archive_date_array[2]}"
-      echo "archive year: $instance_archive_year"
     else
       instance_archive_month="${archive_date_array[0]}"
-      echo "archive month: $instance_archive_month"
       instance_archive_day="${archive_date_array[0]}"
-      echo "archive day: $instance_archive_day"
       instance_archive_year="${archive_date_array[0]}"
-      echo "archive year: $instance_archive_year"
     fi
 
     # get date of the instance zone
     instance_zone_date=$(get_zone_date "$instance_scheduler_time_zone")
-    echo "zone date: $instance_zone_date"
-
     # get day of the instance zone
     instance_zone_weekday=$(get_zone_weekday "$instance_scheduler_time_zone")
-    echo "zone day: $instance_zone_weekday"
-
     # get time of the instance zone
     instance_zone_time=$(get_zone_time "$instance_scheduler_time_zone")
-    echo "zone time: $instance_zone_time"
-
 
     local is_start_stop_today=$(check_start_stop_today "$instance_zone_weekday" "${instance_scheduler_days[@]}")
-    echo "------------------------------------------------"
-    echo "start/stop today?: $is_start_stop_today"
+
+
+    function print_info () {
+      echo "------------------------------------------------"
+      echo "instance: $instance_name"
+      echo "status: $instance_status"
+      echo "owner: $instance_owner"
+      echo "start time: $instance_scheduler_start_time"
+      echo ""
+      echo "scheduler values: ${scheduler_array[@]}"
+      echo "start time: $instance_scheduler_start_time"
+      echo "stop time: $instance_scheduler_stop_time"
+      echo "time zone: $instance_scheduler_time_zone"
+      echo "days: ${instance_scheduler_days[@]}"
+      echo ""
+      echo "archive-date values: $instance_archive_date"
+      echo "archive month: $instance_archive_month"
+      echo "archive day: $instance_archive_day"
+      echo "archive year: $instance_archive_year"
+      echo ""
+      echo "zone date: $instance_zone_date"
+      echo "zone day: $instance_zone_weekday"
+      echo "zone time: $instance_zone_time"
+      echo ""
+      echo "start/stop today?: $is_start_stop_today"
+    }
+
+    print_info
 
     if [[ "$instance_zone_date" == "$instance_archive_date" ]]; then
         if [[ "$instance_zone_time" == "$email_time" ]]; then
@@ -721,11 +718,11 @@ function instances_control () {
           delete_instance "$instance" "$instance_zone" "$project"
         fi
     elif [[ "$is_start_stop_today" ]]; then
-      if [[ "$instance_zone_time" == "$instance_scheduler_start_time" ]]; then
+      if [[ ( "$instance_zone_time" == "$instance_scheduler_start_time" ) && ( "$instance_status" == "TERMINATED" ) ]]; then
         # start instance
         start_instance "$instance" "$instance_zone" "$project"
         echo "instance $instance is starting now"
-      elif [[ "$instance_zone_time" == "$instance_scheduler_stop_time" ]]; then
+      elif [[ "$instance_zone_time" == "$instance_scheduler_stop_time" && ( "$instance_status" == "RUNNING" ) ]]; then
         # stop instance
         stop_instance "$instance" "$instance_zone" "$project"
         echo "instance $instance is stoping now"
