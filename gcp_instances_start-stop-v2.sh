@@ -634,7 +634,7 @@ function instances_control () {
     # get status of instance
     instance_status=$(get_instance_status "$instance_name")
     # get zone of instance
-    instance_zone=$(get_instance_zone "$instance_name")#echo "zone: $instance_zone"
+    instance_zone=$(get_instance_zone "$instance_name")
     # get instance value of the owner label
     instance_owner=$(get_label_values "$instance_name" "$instance_zone" "$project" "$owner_label" "$owner_label_ifs")
     # get instance values of the scheduler label
@@ -680,7 +680,7 @@ function instances_control () {
       echo "instance: $instance_name"
       echo "status: $instance_status"
       echo "owner: $instance_owner"
-      echo "start time: $instance_scheduler_start_time"
+      echo "zone: $instance_zone"
       echo ""
       echo "scheduler values: ${scheduler_array[@]}"
       echo "start time: $instance_scheduler_start_time"
