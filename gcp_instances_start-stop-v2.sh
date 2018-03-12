@@ -36,7 +36,7 @@ source ~/.bash_profile
 
 ## Global variables
 #projects=("css-us" "css-apac" "css-emea" "probable-sector-147517" "enablement-183818")
-projects=("scheduler-test-181019")
+projects=("css-us" "css-apac" "batch-volume-testing" "css-emea" "probable-sector-147517" "scheduler-test-181019" "enablement-183818")
 owner_label="owner"
 owner_label_ifs="-"
 email_time="1000" #10am
