@@ -560,45 +560,45 @@ function get_tz_identifier () {
 # [END get_tz_identifier]
 
 
-# [START stop_instances]
-function stop_instances () {
+# [START stop_instance]
+function stop_instance () {
   local instance_name="$1"
   local instance_zone="$2"
   local instance_project="$3"
   gcloud compute instances stop "$instance_name" --zone "$instance_zone" --project "$instance_project" >> "logs/gpc_instance_stop_$time_stamp.log"
 }
-# [END stop_instances]
+# [END stop_instance]
 
 
-# [START start_instances]
-function start_instances () {
+# [START start_instance]
+function start_instance () {
   local instance_name="$1"
   local instance_zone="$2"
   local instance_project="$3"
   gcloud compute instances start "$instance_name" --zone "$instance_zone" --project "$instance_project" >> "logs/gpc_instance_start_$time_stamp.log"
 }
-# [END start_instances]
+# [END start_instance]
 
 
-# [START delete_instances]
-function delete_instances () {
+# [START delete_instance]
+function delete_instance () {
   local instance_name="$1"
   local instance_zone="$2"
   local instance_project="$3"
   gcloud compute instances delete "$instance_name" --zone "$instance_zone" --project "$instance_project" >> "logs/gpc_instance_delete_$time_stamp.log"
 }
-# [END delete_instances]
+# [END delete_instance]
 
 
-# [START snapshot_instances]
-function snapshot_instances () {
+# [START delete_instance]
+function delete_instance () {
   local instance_name="$1"
   local instance_zone="$2"
   local instance_project="$3"
   local snapshot_name=$(echo "${instance_name}" | sed -e "s/vm-/ss-/") # snapshots share the instance name with a different prefix: "vm-instance" --> "ss-instance"
   gcloud compute disks snapshot "$instance_name" --zone "$instance_zone" --project "$instance_project" --snapshot-names="$snapshot_name" >> "logs/gpc_instance_snapshot_$time_stamp.log"
 }
-# [END snapshot_instances]
+# [END delete_instance]
 
 
 # [START instances_control]
@@ -710,11 +710,15 @@ function instances_control () {
           # email user
           echo "Instance $instance will be archived today at 22:00"
         elif [[ "$instance_zone_time" == "$archive_time"  ]]; then
-          # archive instance:
-          # stop instance
+          #stop instance
+          echo "Stop instance"
+          stop_instance "$instance" "$instance_zone" "$project"
           # snapshot instance
+          echo "Snapshot instance"
+          snapshot_instance "$instance" "$instance_zone" "$project"
           # delete instance
-          echo "Instance $instance will be archived now"
+          echo "Delete instance"
+          delete_instance "$instance" "$instance_zone" "$project"
         fi
     elif [[ "$is_start_stop_today" ]]; then
       if [[ "$instance_zone_time" == "$instance_scheduler_start_time" ]]; then
@@ -727,7 +731,6 @@ function instances_control () {
         echo "instance $instance is stoping now"
       fi
     fi
-
   done
 }
 # [END instances_control]
