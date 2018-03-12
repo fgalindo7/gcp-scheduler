@@ -35,8 +35,8 @@
 source ~/.bash_profile
 
 ## Global variables
-#projects=("css-us" "css-apac" "css-emea" "probable-sector-147517" "enablement-183818")
-projects=("css-us" "css-apac" "css-emea" "probable-sector-147517" "batch-volume-testing" "enablement-183818")
+projects=("scheduler-test-181019")
+#projects=("css-us" "css-apac" "css-emea" "probable-sector-147517" "batch-volume-testing" "enablement-183818")
 owner_label="owner"
 owner_label_ifs="-"
 email_time="1000" #10am
@@ -46,21 +46,26 @@ scheduler_label_ifs="-"
 weekdays_ifs="_"
 archive_label="archive-date"
 archive_label_ifs="-"
-exceptions=("devops" "support-docker-registry")
 default_start_time="none"
 default_stop_time="1800"
 default_time_zone="est"
 valid_time_zones=("aedt" "aest" "jst" "cst" "sgt" "ist" "cest" "cet" "bsm" "gmt" "brst" "brt" "edt" "cdt" "est" "ct" "pdt" "pst")
 valid_days=("mon" "tue" "wed" "thu" "fri" "sat" "sun" "all" "weekdays" "weekends")
+tmp_dir="environments"
+logs_dir="logs"
+logs_file="gcp-logs"
+logs_file_format="log"
+envs_list="gcp-instances-list"
+envs_list_format="txt"
+export time_stamp
 
 
 # [MAIN start]
 function main() {
   make_directories
-
   for project in "${projects[@]}"; do
-    get_current_instances "$project"
     instances_control "$project"
+    #rm -rf "$tmp_dir/$envs_list-$time_stamp.$envs_list_format"
   done
 }
 # [END]
@@ -69,47 +74,25 @@ function main() {
 # [START make_directories]
 function make_directories () {
 
-  if [ ! -d "environments" ]; then
-    mkdir environments
+  if [ ! -d "$tmp_dir" ]; then
+    mkdir "$tmp_dir"
   fi
 
-  if [ ! -d "logs" ]; then
-    mkdir logs
+  if [ ! -d "$logs_dir" ]; then
+    mkdir "$logs_dir"
   fi
 }
 # [END make_directories]
 
 
-# [START remove_exceptions]
-function remove_exceptions () {
-  # delete exceptions using sed
-  # for exception in ${exceptions[@]}; do echo ${exception}; sed -i -e "/${exception}/d" environments/gcp_instances_list.txt; done
-  for exception in "${exceptions[@]}"; do
-    sed -i -e "/${exception}/d" environments/gcp_instances_list.txt
-  done
-}
-# [END remove_exceptions]
-
-
-# [START create_instances_array]
-function create_instances_array () {
-  local instances_array
-  while IFS=" " read -r line || [[ -n ${line} ]] ; do
-    instances_array+=($(echo ${line} | awk '{print $1;}'))
-  done < "environments/gcp_instances_list.txt"
-  echo "${instances_array[@]}"
-}
-# [END create_instances_array]
-
-
 # [START get_current_instances]
 function get_current_instances () {
-	local project=$1
-  # list of NAME ZONE STATUS without header sorted by zone
-  gcloud compute instances list --project $project | awk 'NR>1{print $1, $2, $NF}' > environments/gcp_instances_list.txt
-  # call function to remove all instances that are exceptions to the scheduler
-  remove_exceptions
-	instances_array=($(create_instances_array))
+	local project="$1"
+  local time_stamp="$2"
+  # list of NAME ZONE STATUS without header in a file
+  gcloud compute instances list --project $project | awk 'NR>1{print $1, $2, $NF}' > "$tmp_dir/$envs_list-$time_stamp.$envs_list_format"
+  # return as echo an array of instances
+  instances_array=$(gcloud compute instances list --project $project | awk 'NR>1{print $1}')
   echo "${instances_array[@]}"
 }
 # [END get_current_instances]
@@ -199,22 +182,31 @@ function check_start_stop_today () {
     else
       if [[ ( "$day" == "weekend" ||  "$day" == "weekends" ) && ( "$day_of_the_week" == "sat" || "$day_of_the_week" == "sun" ) ]]; then
         result="true"
+        break
       elif [[ ( "$day" == "weekday" ||  "$day" == "weekdays" ) && ( "$day_of_the_week" == "mon" || "$day_of_the_week" == "tue" || "$day_of_the_week" == "wed" || "$day_of_the_week" == "thu" || "$day_of_the_week" == "fri" ) ]]; then
         result="true"
+        break
       elif [[ ( "$day" == "mon" ) && ( "$day_of_the_week" == "mon") ]]; then
         result="true"
+        break
       elif [[ ( "$day" == "tue" ) && ( "$day_of_the_week" == "tue") ]]; then
         result="true"
+        break
       elif [[ ( "$day" == "wed" ) && ( "$day_of_the_week" == "wed") ]]; then
         result="true"
+        break
       elif [[ ( "$day" == "thu" ) && ( "$day_of_the_week" == "thu") ]]; then
         result="true"
+        break
       elif [[ ( "$day" == "fri" ) && ( "$day_of_the_week" == "fri") ]]; then
         result="true"
+        break
       elif [[ ( "$day" == "sat" ) && ( "$day_of_the_week" == "sat") ]]; then
         result="true"
+        break
       elif [[ ( "$day" == "sun" ) && ( "$day_of_the_week" == "sun") ]]; then
         result="true"
+        break
       else
         result="false"
       fi
@@ -225,6 +217,25 @@ function check_start_stop_today () {
 
 }
 # [END check_start_stop_today]
+
+
+
+# [START check_archive_today
+# check_archive_today "$instance_zone_date" "$instance_archive_date"
+function check_archive_today () {
+  local date1="$1"
+  local date2="$2"
+  result="false"
+
+  if [[ "$date1" == "$date2" ]]; then
+    result="true"
+  else
+    result="false"
+  fi
+
+  echo "$result"
+}
+# [END check_archive_today]
 
 
 # [START check_archive_key_array]
@@ -429,8 +440,9 @@ function parse_string_into_array () {
 
 # [START get_instance_status]
 function get_instance_status () {
-  local instance_name=$1
-  local instance_status=$(awk -v pat="$instance_name " '$0 ~ pat {print $3}' environments/gcp_instances_list.txt)
+  local instance_name="$1"
+  local time_stamp="$2"
+  local instance_status=$(awk -v pat="$instance_name " '$0 ~ pat {print $3}' "$tmp_dir/$envs_list-$time_stamp.$envs_list_format")
   echo "$instance_status"
 }
 # [END get_instance_status]
@@ -438,8 +450,9 @@ function get_instance_status () {
 
 # [START get_instance_zone]
 function get_instance_zone () {
-  local instance_name=$1
-  local instance_zone=$(awk -v pat="$instance_name " '$0 ~ pat {print $2}' environments/gcp_instances_list.txt)
+  local instance_name="$1"
+  local time_stamp="$2"
+  local instance_zone=$(awk -v pat="$instance_name " '$0 ~ pat {print $2}' "$tmp_dir/$envs_list-$time_stamp.$envs_list_format")
   echo "$instance_zone"
 }
 # [END get_instance_zone]
@@ -565,7 +578,8 @@ function stop_instance () {
   local instance_name="$1"
   local instance_zone="$2"
   local instance_project="$3"
-  gcloud compute instances stop "$instance_name" --zone "$instance_zone" --project "$instance_project" >> "logs/gpc_instance_stop_$time_stamp.log"
+  local time_stamp="$4"
+  gcloud compute instances stop "$instance_name" --zone "$instance_zone" --project "$instance_project" >> "$logs_dir/$logs_file-$time_stamp.$logs_file_format"
 }
 # [END stop_instance]
 
@@ -575,7 +589,8 @@ function start_instance () {
   local instance_name="$1"
   local instance_zone="$2"
   local instance_project="$3"
-  gcloud compute instances start "$instance_name" --zone "$instance_zone" --project "$instance_project" >> "logs/gpc_instance_start_$time_stamp.log"
+  local time_stamp="$4"
+  gcloud compute instances start "$instance_name" --zone "$instance_zone" --project "$instance_project" >> "$logs_dir/$logs_file-$time_stamp.$logs_file_format"
 }
 # [END start_instance]
 
@@ -585,7 +600,8 @@ function delete_instance () {
   local instance_name="$1"
   local instance_zone="$2"
   local instance_project="$3"
-  gcloud compute instances delete "$instance_name" --zone "$instance_zone" --project "$instance_project" >> "logs/gpc_instance_delete_$time_stamp.log"
+  local time_stamp="$4"
+  gcloud compute instances delete "$instance_name" --zone "$instance_zone" --project "$instance_project" >> "$logs_dir/$logs_file-$time_stamp.$logs_file_format"
 }
 # [END delete_instance]
 
@@ -595,8 +611,9 @@ function delete_instance () {
   local instance_name="$1"
   local instance_zone="$2"
   local instance_project="$3"
+  local time_stamp="$4"
   local snapshot_name=$(echo "${instance_name}" | sed -e "s/vm-/ss-/") # snapshots share the instance name with a different prefix: "vm-instance" --> "ss-instance"
-  gcloud compute disks snapshot "$instance_name" --zone "$instance_zone" --project "$instance_project" --snapshot-names="$snapshot_name" >> "logs/gpc_instance_snapshot_$time_stamp.log"
+  gcloud compute disks snapshot "$instance_name" --zone "$instance_zone" --project "$instance_project" --snapshot-names="$snapshot_name" >> "$logs_dir/$logs_file-$time_stamp.$logs_file_format"
 }
 # [END delete_instance]
 
@@ -625,19 +642,20 @@ function instances_control () {
   local instance_zone_weekday
   local instance_zone_time
 
-  instances_array=($(get_current_instances $project))
+  local time_stamp=`date -u +"%m.%d.%Y-%H%M%S"`
+  local is_start_stop_today
+  local is_archive_today
+
+  local instances_array=($(get_current_instances "$project" "$time_stamp"))
+  #echo "${instances_array[@]}"
 
   # loop through instances to start/stop or to archive
   for instance in "${instances_array[@]}"; do
-    # get instance name
+
     instance_name="$instance"
-    # get status of instance
-    instance_status=$(get_instance_status "$instance_name")
-    # get zone of instance
-    instance_zone=$(get_instance_zone "$instance_name")
-    # get instance value of the owner label
+    instance_status=$(get_instance_status "$instance_name" "$time_stamp")
+    instance_zone=$(get_instance_zone "$instance_name" "$time_stamp")
     instance_owner=$(get_label_values "$instance_name" "$instance_zone" "$project" "$owner_label" "$owner_label_ifs")
-    # get instance values of the scheduler label
     scheduler_array=($(get_label_values "$instance_name" "$instance_zone" "$project" "$scheduler_label" "$scheduler_label_ifs"))
 
     if [[ "${#scheduler_array[@]}" -eq 4 ]]; then
@@ -652,7 +670,6 @@ function instances_control () {
       instance_scheduler_days="${scheduler_array[0]}"
     fi
 
-    # get instance values of the archive-date label
     archive_date_array=($(get_label_values "$instance_name" "$instance_zone" "$project" "$archive_label" "$archive_label_ifs"))
     instance_archive_date=$(get_label_values "$instance_name" "$instance_zone" "$project" "$archive_label" "$archive_label_ifs")
     if [[ "${#archive_date_array[@]}" -eq 3 ]]; then
@@ -665,14 +682,12 @@ function instances_control () {
       instance_archive_year="${archive_date_array[0]}"
     fi
 
-    # get date of the instance zone
     instance_zone_date=$(get_zone_date "$instance_scheduler_time_zone")
-    # get day of the instance zone
     instance_zone_weekday=$(get_zone_weekday "$instance_scheduler_time_zone")
-    # get time of the instance zone
     instance_zone_time=$(get_zone_time "$instance_scheduler_time_zone")
 
-    local is_start_stop_today=$(check_start_stop_today "$instance_zone_weekday" "${instance_scheduler_days[@]}")
+    is_start_stop_today=$(check_start_stop_today "$instance_zone_weekday" "${instance_scheduler_days[@]}")
+    is_archive_today=$(check_archive_today "$instance_zone_date" "$instance_archive_date") ./
 
 
     function print_info () {
@@ -698,37 +713,47 @@ function instances_control () {
       echo "zone time: $instance_zone_time"
       echo ""
       echo "start/stop today?: $is_start_stop_today"
+      echo "archive today?: $is_archive_today"
     }
 
     print_info
 
-    if [[ "$instance_zone_date" == "$instance_archive_date" ]]; then
+    if [[ "$is_archive_today" ]]; then
         if [[ "$instance_zone_time" == "$email_time" ]]; then
           # email user
           echo "Instance $instance will be archived today at 22:00"
         elif [[ "$instance_zone_time" == "$archive_time"  ]]; then
-          #stop instance
-          echo "Stop instance"
-          stop_instance "$instance" "$instance_zone" "$project"
-          # snapshot instance
-          echo "Snapshot instance"
-          snapshot_instance "$instance" "$instance_zone" "$project"
-          # delete instance
-          echo "Delete instance"
-          delete_instance "$instance" "$instance_zone" "$project"
+          echo "==============================" >> "$logs_dir/$logs_file-$time_stamp.$logs_file_format"
+          echo " Action: ARCHIVE instance" >> "$logs_dir/$logs_file-$time_stamp.$logs_file_format"
+          echo " Project: $project" >> "$logs_dir/$logs_file-$time_stamp.$logs_file_format"
+          echo " Instance: $instance" >> "$logs_dir/$logs_file-$time_stamp.$logs_file_format"
+          echo " Zone: $instance_zone" >> "$logs_dir/$logs_file-$time_stamp.$logs_file_format"
+          stop_instance "$instance" "$instance_zone" "$project" "$time_stamp"
+          snapshot_instance "$instance" "$instance_zone" "$project" "$time_stamp"
+          delete_instance "$instance" "$instance_zone" "$project" "$time_stamp"
         fi
     elif [[ "$is_start_stop_today" ]]; then
       if [[ ( "$instance_zone_time" == "$instance_scheduler_start_time" ) && ( "$instance_status" == "TERMINATED" ) ]]; then
-        # start instance
-        start_instance "$instance" "$instance_zone" "$project"
-        echo "instance $instance is starting now"
-      elif [[ "$instance_zone_time" == "$instance_scheduler_stop_time" && ( "$instance_status" == "RUNNING" ) ]]; then
-        # stop instance
-        stop_instance "$instance" "$instance_zone" "$project"
-        echo "instance $instance is stoping now"
+        echo "==============================" >> "$logs_dir/$logs_file-$time_stamp.$logs_file_format"
+        echo " Action: START instance" >> "$logs_dir/$logs_file-$time_stamp.$logs_file_format"
+        start_instance "$instance" "$instance_zone" "$project" "$time_stamp"
+        echo " Project: $project" >> "$logs_dir/$logs_file-$time_stamp.$logs_file_format"
+        echo " Instance: $instance" >> "$logs_dir/$logs_file-$time_stamp.$logs_file_format"
+        echo " Zone: $instance_zone" >> "$logs_dir/$logs_file-$time_stamp.$logs_file_format"
+        echo "" >> "$logs_dir/$logs_file-$time_stamp.$logs_file_format"
+      elif [[ ( "$instance_zone_time" == "$instance_scheduler_stop_time" ) && ( "$instance_status" == "RUNNING" ) ]]; then
+        echo "==============================" >> "$logs_dir/$logs_file-$time_stamp.$logs_file_format"
+        echo " Action: STOP instance" >> "$logs_dir/$logs_file-$time_stamp.$logs_file_format"
+        stop_instance "$instance" "$instance_zone" "$project" "$time_stamp"
+        echo " Project: $project" >> "$logs_dir/$logs_file-$time_stamp.$logs_file_format"
+        echo " Instance: $instance" >> "$logs_dir/$logs_file-$time_stamp.$logs_file_format"
+        echo " Zone: $instance_zone" >> "$logs_dir/$logs_file-$time_stamp.$logs_file_format"
+        echo "" >> "$logs_dir/$logs_file-$time_stamp.$logs_file_format"
       fi
     fi
   done
+
+  rm -rf "$tmp_dir/$envs_list-$time_stamp.$envs_list_format"
 }
 # [END instances_control]
 
