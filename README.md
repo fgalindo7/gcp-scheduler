@@ -41,10 +41,7 @@ This script is setup as a cronjob to be run every 3 minutes on an AWS t2.micro (
 ## Zones
 In accordance with the IANA, the scheduler uses the following TZ identifiers to
 start, stop and remove instances: <br />
-
-https://www.iana.org/time-zones  <br />
-https://en.wikipedia.org/wiki/List_of_tz_database_time_zones  <br />
-<br />
+**Note**: daylight saving times have their own TZ identifiers.
 
 TZ Identifier | Meaning | Time offset from UTC  
 --------------| ------- | ---------------
@@ -67,7 +64,8 @@ CT | Central Standard Time | UTC/GMT -6 hours (from Nov 5 to Mar 12)
 PDT | Pacific Daylight Time | UTC/GMT -7 hours (from Mar 12 to Nov 5)
 PST | Pacific Standard Time | UTC/GMT -8 hours (from Nov 5 to Mar 12)
 
-**Note**: daylight saving times have their own TZ identifiers.
+https://www.iana.org/time-zones  <br />
+https://en.wikipedia.org/wiki/List_of_tz_database_time_zones  <br />
 
 ## Contributors
 @franciscogd <br />
