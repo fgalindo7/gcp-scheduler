@@ -35,8 +35,9 @@
 source ~/.bash_profile
 
 ## Global variables
+projects=("$1")
 #projects=("scheduler-test-181019")
-projects=("css-us" "css-apac" "css-emea" "probable-sector-147517" "batch-volume-testing" "enablement-183818")
+#projects=("css-us" "css-apac" "css-emea" "probable-sector-147517" "batch-volume-testing" "enablement-183818")
 owner_label="owner"
 owner_label_ifs="-"
 email_time="1000" #10am
@@ -643,8 +644,8 @@ function instances_control () {
   local instance_zone_time
 
   local time_stamp=`date -u +"%m.%d.%Y-%H%M%S"`
-  local is_start_stop_today
-  local is_archive_today
+  local is_start_stop_today="false"
+  local is_archive_today="false"
 
   local instances_array=($(get_current_instances "$project" "$time_stamp"))
   #echo "${instances_array[@]}"
@@ -691,6 +692,7 @@ function instances_control () {
 
 
     function print_info () {
+      echo ""
       echo "------------------------------------------------"
       echo "project: $project"
       echo "------------------------------------------------"
@@ -716,26 +718,30 @@ function instances_control () {
       echo ""
       echo "start/stop today?: $is_start_stop_today"
       echo "archive today?: $is_archive_today"
-      echo ""
     }
-    # print_info
+    print_info
 
-    if [[ "$is_archive_today" ]]; then
-        if [[ "$instance_zone_time" == "$email_time" ]]; then
+
+    if [[ "$is_archive_today" == "true" ]]; then
+        if [[ ( $((10#$instance_zone_time)) -le $((10#$email_time+3)) ) && ( $((10#$instance_zone_time)) -ge $((10#$email_time-3)) ) ]]; then
           # email user
           echo "Instance $instance will be archived today at 22:00"
-        elif [[ "$instance_zone_time" == "$archive_time"  ]]; then
+        elif [[ ( $((10#$instance_zone_time)) -le $((10#$archive_time+3)) ) && ( $((10#$instance_zone_time)) -ge $((10#$archive_time-3)) ) ]]; then
           echo "==============================" >> "$logs_dir/$logs_file-$time_stamp.$logs_file_format"
           echo " Action: ARCHIVE instance" >> "$logs_dir/$logs_file-$time_stamp.$logs_file_format"
           echo " Project: $project" >> "$logs_dir/$logs_file-$time_stamp.$logs_file_format"
           echo " Instance: $instance" >> "$logs_dir/$logs_file-$time_stamp.$logs_file_format"
           echo " Zone: $instance_zone" >> "$logs_dir/$logs_file-$time_stamp.$logs_file_format"
-          stop_instance "$instance" "$instance_zone" "$project" "$time_stamp"
-          snapshot_instance "$instance" "$instance_zone" "$project" "$time_stamp"
-          delete_instance "$instance" "$instance_zone" "$project" "$time_stamp"
+          echo "" >> "$logs_dir/$logs_file-$time_stamp.$logs_file_format"
+          if [[ "$instance_status" == "RUNNING" ]]; then
+            stop_instance "$instance" "$instance_zone" "$project" "$time_stamp"
+          else
+            snapshot_instance "$instance" "$instance_zone" "$project" "$time_stamp"
+            delete_instance "$instance" "$instance_zone" "$project" "$time_stamp"
+          fi
         fi
-    elif [[ "$is_start_stop_today" ]]; then
-      if [[ ( ( "$instance_zone_time" -le $(($instance_scheduler_start_time+5)) ) || ( "$instance_zone_time" -ge $(($instance_scheduler_start_time-5)) ) ) && ( "$instance_status" == "TERMINATED" ) ]]; then
+    elif [[ "$is_start_stop_today" == "true" ]]; then
+      if [[ ( ( $((10#$instance_zone_time)) -le $((10#$instance_scheduler_start_time+3)) ) && ( $((10#$instance_zone_time)) -ge $((10#$instance_scheduler_start_time-3)) ) ) && ( "$instance_status" == "TERMINATED" ) ]]; then
         echo "==============================" >> "$logs_dir/$logs_file-$time_stamp.$logs_file_format"
         echo " Action: START instance" >> "$logs_dir/$logs_file-$time_stamp.$logs_file_format"
         start_instance "$instance" "$instance_zone" "$project" "$time_stamp"
@@ -743,7 +749,8 @@ function instances_control () {
         echo " Instance: $instance" >> "$logs_dir/$logs_file-$time_stamp.$logs_file_format"
         echo " Zone: $instance_zone" >> "$logs_dir/$logs_file-$time_stamp.$logs_file_format"
         echo "" >> "$logs_dir/$logs_file-$time_stamp.$logs_file_format"
-      elif [[ ( ( "$instance_zone_time" -le $(($instance_scheduler_stop_time+5)) ) || ( "$instance_zone_time" -ge $(($instance_scheduler_stop_time-5)) ) ) && ( "$instance_status" == "RUNNING" ) ]]; then
+        echo " Instance $instance is starting"
+      elif [[ ( ( $((10#$instance_zone_time)) -le $((10#$instance_scheduler_stop_time+3)) ) && ( $((10#$instance_zone_time)) -ge $((10#$instance_scheduler_stop_time-3)) ) ) && ( "$instance_status" == "RUNNING" ) ]]; then
         echo "==============================" >> "$logs_dir/$logs_file-$time_stamp.$logs_file_format"
         echo " Action: STOP instance" >> "$logs_dir/$logs_file-$time_stamp.$logs_file_format"
         stop_instance "$instance" "$instance_zone" "$project" "$time_stamp"
@@ -751,8 +758,14 @@ function instances_control () {
         echo " Instance: $instance" >> "$logs_dir/$logs_file-$time_stamp.$logs_file_format"
         echo " Zone: $instance_zone" >> "$logs_dir/$logs_file-$time_stamp.$logs_file_format"
         echo "" >> "$logs_dir/$logs_file-$time_stamp.$logs_file_format"
+        echo " Instance $instance is stopping."
+      else
+        echo "==============================" >> "$logs_dir/$logs_file-$time_stamp.$logs_file_format"
+        echo " Nothing to do at $time_stamp " >> "$logs_dir/$logs_file-$time_stamp.$logs_file_format"
+        echo ""
       fi
     fi
+
   done
 
   rm -rf "$tmp_dir/$envs_list-$time_stamp.$envs_list_format"
