@@ -35,9 +35,8 @@
 source ~/.bash_profile
 
 ## Global variables
-projects=("$1")
+
 #projects=("scheduler-test-181019")
-#projects=("css-us" "css-apac" "css-emea" "probable-sector-147517" "batch-volume-testing" "enablement-183818")
 owner_label="owner"
 owner_label_ifs="-"
 email_time="1000" #10am
@@ -58,7 +57,12 @@ logs_file="gcp-logs"
 logs_file_format="log"
 envs_list="gcp"
 envs_list_format="txt"
-export time_stamp
+
+if [[ -z "$1" ]]; then
+  projects=("css-us" "css-apac" "css-emea" "probable-sector-147517" "batch-volume-testing" "enablement-183818")
+else
+  projects=("$1")
+fi
 
 
 # [MAIN start]
@@ -781,6 +785,5 @@ function instances_control () {
   rm -rf "$tmp_dir/$envs_list-$time_stamp.$envs_list_format"
 }
 # [END instances_control]
-
 
 main "$@"
