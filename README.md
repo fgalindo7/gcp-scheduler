@@ -42,7 +42,6 @@ This script is setup as a cronjob to be run every 3 minutes on an AWS t2.micro (
 In accordance with the IANA, the scheduler uses the following TZ identifiers to
 start, stop and remove instances: <br />
 
-<br />
 https://www.iana.org/time-zones  <br />
 https://en.wikipedia.org/wiki/List_of_tz_database_time_zones  <br />
 <br />
