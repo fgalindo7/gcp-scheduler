@@ -56,7 +56,7 @@ tmp_dir="environments"
 logs_dir="logs"
 logs_file="gcp-logs"
 logs_file_format="log"
-envs_list="gcp-instances-list"
+envs_list="gcp-$project-list"
 envs_list_format="txt"
 export time_stamp
 
