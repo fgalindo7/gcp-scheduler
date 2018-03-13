@@ -56,7 +56,7 @@ tmp_dir="environments"
 logs_dir="logs"
 logs_file="gcp-logs"
 logs_file_format="log"
-envs_list="gcp-$project-list"
+envs_list="gcp"
 envs_list_format="txt"
 export time_stamp
 
@@ -65,6 +65,7 @@ export time_stamp
 function main() {
   make_directories
   for project in "${projects[@]}"; do
+    envs_list="$envs_list-$project"
     instances_control "$project"
     #rm -rf "$tmp_dir/$envs_list-$time_stamp.$envs_list_format"
   done
