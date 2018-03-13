@@ -45,7 +45,6 @@ start, stop and remove instances: <br />
 https://www.iana.org/time-zones  <br />
 https://en.wikipedia.org/wiki/List_of_tz_database_time_zones  <br />
 <br />
-Only the following TZ identifiers can be used in the scheduler:
 
 TZ Identifier | Meaning | Time offset from UTC  
 --------------| ------- | ---------------
