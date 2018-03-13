@@ -23,9 +23,20 @@ days_of_the_week | mon, tue, wed, thu, fri, sat, sun, all, weekdays, weekends
 The script pulls the current instances from GCP under the desired projects. Depending on their labels, it generates the start, stop, or snapshot and delete **gcloud compute** commands.
 
 ## Setup
-This script is setup as a cronjob to be run every minute on an AWS t2.micro (free tier). <br />
+This script is setup as a cronjob to be run every 3 minutes on an AWS t2.micro (free tier). <br />
 <br />
-\* * * * *      ec2-user      ~/gcp_instances_start-stop-v2.sh <br />
+\# Example of job definition: <br />
+\# .---------------- minute (0 - 59) <br />
+\# |  .------------- hour (0 - 23) <br />
+\# |  |  .---------- day of month (1 - 31) <br />
+\# |  |  |  .------- month (1 - 12) OR jan,feb,mar,apr ... <br />
+\# |  |  |  |  .---- day of week (0 - 6) (Sunday=0 or 7) OR sun,mon,tue,wed,thu,fri,sat <br />
+\# |  |  |  |  | <br />
+\# *  *  *  *  * user-name  command to be executed <br />
+\*/3  *  *  *  * ec2-user /home/ec2-user/gcp-scheduler/gcp_instances_start-stop-v2.sh css-apac <br />
+\*/3  *  *  *  * ec2-user /home/ec2-user/gcp-scheduler/gcp_instances_start-stop-v2.sh css-emea <br />
+\*/3  *  *  *  * ec2-user /home/ec2-user/gcp-scheduler/gcp_instances_start-stop-v2.sh css-us <br />
+\*/3  *  *  *  * ec2-user /home/ec2-user/gcp-scheduler/gcp_instances_start-stop-v2.sh enablement-183818 <br />
 <br />
 
 ## Zones
